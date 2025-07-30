@@ -1,9 +1,30 @@
 import { Hono } from "hono";
-import { createDevice } from "../services/device.service";
-import { deviceRegisterValidation } from "../validation/device.validation";
+import { createDevice, getDevice } from "../services/device.service";
+import { deviceFindValidation, deviceRegisterValidation } from "../validation/device.validation";
 import { formatZodError } from "../lib/zodErrorFormatter";
 
 const deviceRoute = new Hono();
+
+deviceRoute.get(
+    '/:id',
+    async(c) => {
+        let params = c.req.param()
+
+        const zodResult = deviceFindValidation.safeParse(params)
+        if (!zodResult.success) {
+            const formattedError = formatZodError(zodResult.error);
+            return c.json(formattedError, 400);
+        }
+
+        const mongoResult = await getDevice(zodResult.data.id);
+
+        if (!mongoResult.success) {
+            return c.json(mongoResult, 404);
+        }
+        
+        return c.json(mongoResult, 200);
+    }
+)
 
 deviceRoute.post(
     '/register',

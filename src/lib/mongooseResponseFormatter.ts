@@ -13,7 +13,7 @@ export interface ApiResponse<T = any> {
 }
 
 
-function formatMongooseError(error: any): Array<{ field: string; message: string; code?: string }> {
+export function formatMongooseError(error: any): Array<{ field: string; message: string; code?: string }> {
   // Validation Error
   if (error instanceof MongooseError.ValidationError) {
     return Object.keys(error.errors).map(key => ({

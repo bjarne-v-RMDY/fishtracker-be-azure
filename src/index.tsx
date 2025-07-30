@@ -1,3 +1,8 @@
+/*
+  RMDY - Fish Tracker APIx
+*/
+
+
 import { Hono } from 'hono'
 import { logger } from './middleware'
 import { Lander } from './templates'
@@ -24,7 +29,11 @@ app.use(logger)
 app.get("/swagger/doc", (c) => c.json(openApiDoc));
 app.get('/swagger/ui', swaggerUI({ url: '/swagger/doc' }))
 
-//Base entrypoint
+
+/*
+* Entrypoint for the API
+* - serves a small React app
+*/
 app.get('/', (c) => {
   return c.html(<Lander />)
 })

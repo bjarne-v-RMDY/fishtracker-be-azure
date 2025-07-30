@@ -12,9 +12,7 @@ const Layout: FC = (props) => {
     )
 }
 
-export const Lander: FC = ({
-    port
-}) => {
+export const Lander: FC = () => {
     return (
         <Layout>
             <div class="w-full h-svh bg-black grid place-items-center text-white">

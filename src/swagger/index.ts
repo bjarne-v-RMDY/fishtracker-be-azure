@@ -16,26 +16,6 @@ export const openApiDoc = {
                 },
             },
         },
-        "/swagger/doc": {
-            get: {
-                summary: "Swagger doc",
-                responses: {
-                    "200": {
-                        description: "Swagger docs",
-                    },
-                },
-            },
-        },
-        "/swagger/ui": {
-            get: {
-                summary: "Swagger UI",
-                responses: {
-                    "200": {
-                        description: "Swagger UI",
-                    },
-                },
-            },
-        },
         "/device/register": {
             post: {
                 summary: "Register a new device",
@@ -88,6 +68,65 @@ export const openApiDoc = {
                                             type: "string",
                                             example: "Validation error: ID is required and must be a string",
                                         },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+        "/device/:id": {
+            get: {
+                summary: "Get device by ID",
+                parameters: [
+                    {
+                        name: "id",
+                        in: "path",
+                        required: true,
+                        schema: {
+                            type: "string",
+                        },
+                        description: "The unique identifier for the device",
+                    },
+                ],
+                responses: {
+                    "200": {
+                        description: "Device found",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        success: { type: "boolean", example: true },
+                                        data: { type: "object" }, // Adjust as needed
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    "400": {
+                        description: "Validation error",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        error: { type: "string", example: "Validation error: ID is required and must be a string" },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    "404": {
+                        description: "Device not found",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        success: { type: "boolean", example: false },
+                                        message: { type: "string", example: "Device not found" },
                                     },
                                 },
                             },
