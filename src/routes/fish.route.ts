@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { deviceFindValidation } from "../validation/device.validation";
+import { deviceFindValidation, validateDeviceId } from "../validation/device.validation";
 import { formatZodError } from "../lib/zodErrorFormatter";
 import { getDevice } from "../services/device.service";
 import { getFishByDevice } from "../services/fish.service";
@@ -13,15 +13,13 @@ fishRoute.get(
     async(c) => {
         let params = c.req.param()
 
-        //Verify if device actually exists
-        const zodResult = deviceFindValidation.safeParse({id: params.deviceId})
-        if (!zodResult.success) {
-            const formattedError = formatZodError(zodResult.error);
-            return c.json(formattedError, 400);
+        const validatedDeviceId = validateDeviceId(params.deviceId);
+
+        if (!validatedDeviceId.success) {
+            return c.json(validatedDeviceId.error, 400);
         }
 
-
-        const mongoDeviceResult = await getDevice(zodResult.data.id);
+        const mongoDeviceResult = await getDevice(validatedDeviceId.id as string);
 
         if (!mongoDeviceResult.success) {
             return c.json(mongoDeviceResult, 404);

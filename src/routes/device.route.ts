@@ -1,22 +1,25 @@
 import { Hono } from "hono";
 import { createDevice, getDevice } from "../services/device.service";
-import { deviceFindValidation, deviceRegisterValidation } from "../validation/device.validation";
-import { formatZodError } from "../lib/zodErrorFormatter";
+import { validateDeviceId } from "../validation/device.validation";
 
 const deviceRoute = new Hono();
 
 deviceRoute.get(
     '/:id',
     async(c) => {
+
+        //Params
         let params = c.req.param()
 
-        const zodResult = deviceFindValidation.safeParse(params)
-        if (!zodResult.success) {
-            const formattedError = formatZodError(zodResult.error);
-            return c.json(formattedError, 400);
+        //Validate the device
+        const validatedDeviceId = validateDeviceId(params.id);
+
+        if (!validatedDeviceId.success) {
+            return c.json(validatedDeviceId.error, 400);
         }
 
-        const mongoResult = await getDevice(zodResult.data.id);
+        //Check if the device exists
+        const mongoResult = await getDevice(validatedDeviceId.id as string);
 
         if (!mongoResult.success) {
             return c.json(mongoResult, 404);
@@ -38,13 +41,14 @@ deviceRoute.post(
         }
 
         
-        const zodResult = deviceRegisterValidation.safeParse(body);
-        if (!zodResult.success) {
-            const formattedError = formatZodError(zodResult.error);
-            return c.json(formattedError, 400);
+        //Validate the device
+        const validatedDeviceId = validateDeviceId(body);
+
+        if (!validatedDeviceId.success) {
+            return c.json(validatedDeviceId.error, 400);
         }
 
-        const mongoResult = await createDevice(zodResult.data.id);
+        const mongoResult = await createDevice(validatedDeviceId.id as string);
         
         if (!mongoResult.success) {
             return c.json(mongoResult, 400);
