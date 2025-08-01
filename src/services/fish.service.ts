@@ -1,8 +1,9 @@
 import { Fish, FishColor, FishImage, Predator, FunFact } from "../db/models";
-import { createErrorResponse, createSuccessResponse } from "../lib/mongooseResponseFormatter";
+import { ApiResponse, createErrorResponse, createSuccessResponse } from "../lib/mongooseResponseFormatter";
+import { CreateFishWithDataInput } from "../types/fish.types";
 
 // Create a new fish with all related data
-async function createFishWithData(fishData) {
+async function createFishWithData(fishData: CreateFishWithDataInput): Promise<ApiResponse> {
     try {
       // Create the fish first
       const fish = new Fish(fishData.fish);
@@ -42,10 +43,10 @@ async function createFishWithData(fishData) {
       // Wait for all related data to be created
       await Promise.all(promises);
   
-      return savedFish;
+      return createSuccessResponse(savedFish, 'Fish and related data created successfully');
     } catch (error) {
       console.error('Error creating fish with data:', error);
-      throw error;
+      return createErrorResponse(error, 'Failed to create fish and related data');
     }
   }
   

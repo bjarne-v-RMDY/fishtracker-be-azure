@@ -14,7 +14,7 @@ fishRoute.get(
         let params = c.req.param()
 
         //Verify if device actually exists
-        const zodResult = deviceFindValidation.safeParse(params)
+        const zodResult = deviceFindValidation.safeParse({id: params.deviceId})
         if (!zodResult.success) {
             const formattedError = formatZodError(zodResult.error);
             return c.json(formattedError, 400);
@@ -33,10 +33,10 @@ fishRoute.get(
             return c.json(mongoFishResult, 404)
         }
 
-
-        return c.json(mongoFishResult, 200)
-
-                
+        return c.json(mongoFishResult, 200)    
 
     }
 )
+
+
+export default fishRoute

@@ -10,6 +10,7 @@ import { openApiDoc } from './swagger'
 import { swaggerUI } from '@hono/swagger-ui'
 import { intitateMongoDb } from './db'
 import deviceRoute from './routes/device.route'
+import fishRoute from './routes/fish.route'
 
 
 const app = new Hono()
@@ -43,6 +44,7 @@ app.get('/', (c) => {
 
 //Device route
 app.route("/device", deviceRoute)
+app.route("/fish", fishRoute)
 
 
 export default {

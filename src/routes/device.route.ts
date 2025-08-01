@@ -31,7 +31,6 @@ deviceRoute.post(
     async (c) => {
 
         let body;
-
         try {
             body = await c.req.json();
         } catch (error) {
