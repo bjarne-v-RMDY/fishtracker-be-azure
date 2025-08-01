@@ -27,6 +27,8 @@ app.use(logger)
  * - serve UI
  */
 
+app.get("/health", (c) => c.json({ status: "ok" }))
+
 app.get("/swagger/doc", (c) => c.json(openApiDoc));
 app.get('/swagger/ui', swaggerUI({ url: '/swagger/doc' }))
 
