@@ -135,5 +135,64 @@ export const openApiDoc = {
                 },
             },
         },
+        "/fish/all/{deviceId}": {
+            get: {
+                summary: "Get all fish by device ID",
+                parameters: [
+                    {
+                        name: "deviceId",
+                        in: "path",
+                        required: true,
+                        schema: {
+                            type: "string",
+                        },
+                        description: "The unique identifier for the device",
+                    },
+                ],
+                responses: {
+                    "200": {
+                        description: "Fish data retrieved successfully",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        success: { type: "boolean", example: true },
+                                        data: { type: "array", items: { type: "object" } }, // Adjust as needed for fish data structure
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    "400": {
+                        description: "Validation error",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        error: { type: "string", example: "Validation error: deviceId is required and must be a string" },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    "404": {
+                        description: "Device not found or no fish associated",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        success: { type: "boolean", example: false },
+                                        message: { type: "string", example: "Device not found or no fish associated" },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
     },
 };
