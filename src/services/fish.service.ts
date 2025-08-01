@@ -1,4 +1,5 @@
 import { Fish, FishColor, FishImage, Predator, FunFact } from "../db/models";
+import { createErrorResponse, createSuccessResponse } from "../lib/mongooseResponseFormatter";
 
 // Create a new fish with all related data
 async function createFishWithData(fishData) {
@@ -73,10 +74,17 @@ async function createFishWithData(fishData) {
   // Get all fish for a specific device
   async function getFishByDevice(deviceId: string) {
     try {
-      return await Fish.find({ deviceId }).populate('deviceId');
+      const fish = await Fish.find({ deviceId }).populate('deviceId');
+
+      if(fish === null || fish.length === 0){
+        return createErrorResponse({}, 'No fish foudn related to this device')
+      }
+
+      return createSuccessResponse(fish, 'Fish found')
+
     } catch (error) {
       console.error('Error getting fish by device:', error);
-      throw error;
+      return createErrorResponse(error, 'SOmething went wrong during the fetching of the fish related to the device:' + deviceId);
     }
   }
 
