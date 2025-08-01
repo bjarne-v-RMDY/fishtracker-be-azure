@@ -1,0 +1,15 @@
+{
+  "name": "FishTracker",
+  "scripts": {
+    "dev": "bun run --hot src/index.tsx"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "^0.5.2",
+    "hono": "^4.8.10",
+    "mongoose": "^8.16.5",
+    "zod": "^4.0.14"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

@@ -1,0 +1,42 @@
+import { Hono } from 'hono'
+import { logger } from './middleware'
+import { Lander } from './templates'
+import { openApiDoc } from './swagger'
+import { swaggerUI } from '@hono/swagger-ui'
+import { intitateMongoDb } from './db'
+import deviceRoute from './routes/device.route'
+
+
+const app = new Hono()
+
+//Intialize DB
+intitateMongoDb()
+
+//Middleware
+app.use(logger)
+
+/**
+ *  SWAGGER
+ * - serve doc
+ * - serve UI
+ */
+
+app.get("/swagger/doc", (c) => c.json(openApiDoc));
+app.get('/swagger/ui', swaggerUI({ url: '/swagger/doc' }))
+
+//Base entrypoint
+app.get('/', (c) => {
+  return c.html(<Lander />)
+})
+
+
+//Fish route
+
+//Device route
+app.route("/device", deviceRoute)
+
+
+export default {
+  port: Bun.env.PORT || 3000,
+  fetch: app.fetch,
+} 
