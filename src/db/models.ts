@@ -1,4 +1,4 @@
-import  mongoose from "mongoose";
+import mongoose from "mongoose";
 
 // Device Schema
 const deviceSchema = new mongoose.Schema({
