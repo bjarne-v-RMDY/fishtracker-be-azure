@@ -1,7 +1,8 @@
 {
   "name": "FishTracker",
   "scripts": {
-    "dev": "bun run --hot src/index.tsx"
+    "dev": "bun run --hot src/index.tsx",
+    "build": "bun build ./src/index.tsx --compile --outfile ./build/fishTracker"
   },
   "dependencies": {
     "@hono/swagger-ui": "^0.5.2",
