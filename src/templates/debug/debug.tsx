@@ -55,7 +55,7 @@ const DebugScript = () => (
 export const Debug = () => {
   return (
     <Layout>
-      <div class="bg-black w-full min-h-svh grid grid-cols-2 max-h-svh overflow-hidden">
+      <div class="bg-black w-full min-h-svh grid grid-cols-[0.5fr_1fr] max-h-svh overflow-hidden">
         {/* Left: Buttons */}
         <div class="p-4 space-y-6">
           <GeneralButtons />
