@@ -8,7 +8,7 @@ export const intitateMongoDb = Effect.tryPromise({
     }).then((res) => {
       console.log(
         'Connected to mongodb on: ' +
-        (Bun.env.MONGO || "mongodb://localhost:27017")
+        (Bun.env.MONGO  ? "Azure cosmos db instance of mongodb" : "mongodb://localhost:27017")
       );
       return res;
     }),
