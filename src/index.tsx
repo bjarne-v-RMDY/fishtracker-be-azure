@@ -11,7 +11,7 @@ import { swaggerUI } from '@hono/swagger-ui'
 import { intitateMongoDb } from './db'
 import deviceRoute from './routes/device.route'
 import fishRoute from './routes/fish.route'
-import { Debug } from './templates/debug'
+import { Debug } from './templates/debug/debug'
 import { debug } from './routes/debug.route'
 
 const app = new Hono().basePath("/api")
@@ -48,7 +48,7 @@ app.get('/', (c) => {
 
 //Webroute for testing
 app.get('/debug', (c) => {
-  return c.html(<Debug/>)
+  return c.html(<Debug />)
 })
 
 

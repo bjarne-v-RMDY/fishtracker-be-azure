@@ -36,7 +36,7 @@ deviceRoute.post(
     }
 
     // Validate the device
-    const validatedDeviceId = validateDeviceId(body.id);
+    const validatedDeviceId = validateDeviceId(body.deviceId);
 
     if (!validatedDeviceId.success) {
       return c.json(validatedDeviceId.error, 400);
