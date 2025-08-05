@@ -15,6 +15,8 @@ variables:
   containerRegistry: 'crfishtracker.azurecr.io'
   dockerfilePath: '$(Build.SourcesDirectory)/Dockerfile'
   tag: '$(Build.BuildId)'
+  azureSubscription: 'scFishTracker'
+  appName: 'waFishTrackerApi'
 
   # Agent VM image name
   vmImageName: 'ubuntu-latest'
@@ -37,3 +39,23 @@ stages:
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           $(tag)
+          
+- stage: Deploy
+  displayName: Deploy to Azure Web App
+  dependsOn: Build
+  jobs:
+  - deployment: DeployWebApp
+    displayName: Deploy image to Azure Web App
+    environment: 'production'
+    pool:
+      vmImage: $(vmImageName)
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebAppContainer@1
+            displayName: Deploy container image
+            inputs:
+              azureSubscription: '$(azureSubscription)'
+              appName: '$(appName)'
+              containers: '$(containerRegistry)/$(imageRepository):$(tag)'

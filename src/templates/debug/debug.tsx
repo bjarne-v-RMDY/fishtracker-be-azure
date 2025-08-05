@@ -1,38 +1,11 @@
-import { Layout } from ".";
+import { Layout } from "..";
+import { DeviceButtons } from "./device";
+import { FishUploadForm } from "./fishUploadForm";
+import { GeneralButtons } from "./general";
 
-const GeneralButtons = () => (
-  <div class="mb-6">
-    <div class="font-bold text-white mb-2">General</div>
-    <button
-      class="border border-red-500 text-white px-4 py-2 w-full"
-      hx-get="/api/health"
-      hx-target="#api-result"
-      hx-swap="innerHTML"
-    >
-      API Status
-    </button>
-  </div>
-);
 
-const DeviceButtons = () => (
-  <div>
-    <div class="font-bold text-white mb-2">Device</div>
-    <div class="mb-3">
-      <input
-        type="text"
-        id="device-id-input"
-        placeholder="Enter device ID"
-        class="w-full px-3 py-2 bg-gray-800 border border-gray-600 text-white rounded focus:border-blue-500 focus:outline-none"
-      />
-    </div>
-    <button
-      class="border border-blue-500 text-white px-4 py-2 w-full"
-      onclick="fetchDeviceData()"
-    >
-      Get Device
-    </button>
-  </div>
-);
+
+
 
 const DebugScript = () => (
   <script
@@ -95,14 +68,15 @@ const DebugScript = () => (
 export const Debug = () => {
   return (
     <Layout>
-      <div class="bg-black w-full min-h-svh grid grid-cols-2">
+      <div class="bg-black w-full min-h-svh grid grid-cols-2 max-h-svh overflow-hidden">
         {/* Left: Buttons */}
         <div class="p-4 space-y-6">
           <GeneralButtons />
           <DeviceButtons />
+          <FishUploadForm />
         </div>
         {/* Right: Result window */}
-        <div id="api-result" class="bg-gray-900 text-white p-4 rounded min-h-40">
+        <div id="api-result" class="bg-gray-900 text-white p-4 rounded min-h-40 overflow-auto max-h-[99vh]">
           {/* API responses will appear here */}
         </div>
         <DebugScript />
