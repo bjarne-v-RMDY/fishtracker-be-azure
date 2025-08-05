@@ -1,11 +1,13 @@
 import type { FC } from 'hono/jsx'
 
 
-const Layout: FC = (props) => {
+export const Layout: FC = (props) => {
     return (
         <html>
             <head>
                 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+                <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" integrity="sha384-Akqfrbj/HpNVo8k11SXBb6TlBWmXXlYQrCSqEWmyKJe+hDm3Z/B2WVG4smwBkRVm" crossorigin="anonymous"></script>
+                <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
             </head>
             <body>{props.children}</body>
         </html>

@@ -11,12 +11,13 @@ import { swaggerUI } from '@hono/swagger-ui'
 import { intitateMongoDb } from './db'
 import deviceRoute from './routes/device.route'
 import fishRoute from './routes/fish.route'
-import * as Effect from "effect/Effect"
+import { Debug } from './templates/debug'
+import { debug } from './routes/debug.route'
 
 const app = new Hono().basePath("/api")
 
-// Initialize DB with Effect error handling
-Effect.runPromise(intitateMongoDb).catch((error) => {
+// Initialize DB with error handling (no Effect)
+intitateMongoDb().catch((error) => {
   console.error(error.message)
   process.exit(1)
 })
@@ -34,7 +35,7 @@ app.use(logger)
 app.get("/health", (c) => c.json({ status: "ok" }))
 
 app.get("/swagger/doc", (c) => c.json(openApiDoc));
-app.get('/swagger/ui', swaggerUI({ url: '/swagger/doc' }))
+app.get('/swagger/ui', swaggerUI({ url: '/api/swagger/doc' }))
 
 
 /*
@@ -45,10 +46,16 @@ app.get('/', (c) => {
   return c.html(<Lander />)
 })
 
+//Webroute for testing
+app.get('/debug', (c) => {
+  return c.html(<Debug/>)
+})
+
 
 // Device and Fish routes
 app.route("/device", deviceRoute)
 app.route("/fish", fishRoute)
+app.route("/debug", debug)
 
 
 export default {

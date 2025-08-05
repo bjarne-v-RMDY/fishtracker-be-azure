@@ -1,6 +1,5 @@
 // utils/mongooseResponseFormatter.ts
 import { Error as MongooseError } from 'mongoose';
-import * as Effect from "effect/Effect";
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -12,7 +11,6 @@ export interface ApiResponse<T = any> {
     code?: string;
   }>;
 }
-
 
 export function formatMongooseError(error: any): Array<{ field: string; message: string; code?: string }> {
   // Validation Error
@@ -48,7 +46,6 @@ export function formatMongooseError(error: any): Array<{ field: string; message:
   }];
 }
 
-
 export function createSuccessResponse<T>(data: T, message: string = 'Operation successful'): ApiResponse<T> {
   return {
     success: true,
@@ -57,28 +54,11 @@ export function createSuccessResponse<T>(data: T, message: string = 'Operation s
   };
 }
 
-
 export function createErrorResponse(error: any, message?: string): ApiResponse {
   const errors = formatMongooseError(error);
-  
   return {
     success: false,
     message: message || (errors.length === 1 ? errors[0].message : 'Operation failed'),
     errors
   };
-}
-
-// Effect helpers
-
-export function effectifyPromise<T>(
-  promise: () => Promise<T>,
-  successMsg = "Operation successful",
-  errorMsg = "Operation failed"
-): Effect.Effect<ApiResponse<T>, ApiResponse<any>, never> {
-  return Effect.tryPromise({
-    try: promise,
-    catch: (error) => createErrorResponse(error, errorMsg)
-  }).pipe(
-    Effect.map((data) => createSuccessResponse(data, successMsg))
-  );
 }
