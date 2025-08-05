@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { createDevice, getDevice } from "../services/device.service";
 import { validateDeviceId } from "../validation/device.validation";
-import * as Effect from "effect/Effect";
 
 const deviceRoute = new Hono();
 
@@ -18,14 +17,11 @@ deviceRoute.get(
       return c.json(validatedDeviceId.error, 400);
     }
 
-    // Check if the device exists using Effect
-    const result = await Effect.runPromise(getDevice(validatedDeviceId.id as string));
+    // Check if the device exists
+    const result = await getDevice(validatedDeviceId.id as string);
 
-    if (!result.success) {
-      return c.json(result, 404);
-    }
-
-    return c.json(result, 200);
+    // Always return JSON, with appropriate status
+    return c.json(result, result.success ? 200 : 404);
   }
 );
 
@@ -46,15 +42,12 @@ deviceRoute.post(
       return c.json(validatedDeviceId.error, 400);
     }
 
-    // Create device using Effect
-    const result = await Effect.runPromise(createDevice(validatedDeviceId.id as string));
+    // Create device
+    const result = await createDevice(validatedDeviceId.id as string);
 
-    if (!result.success) {
-      return c.json(result, 400);
-    }
-
-    return c.json(result, 201);
+    return c.json(result, result.success ? 201 : 400);
   }
 );
+
 
 export default deviceRoute;
