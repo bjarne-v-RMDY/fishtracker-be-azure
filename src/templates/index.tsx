@@ -10,6 +10,16 @@ export const Layout: FC = (props) => {
                 <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
             </head>
             <body>{props.children}</body>
+            <style>
+                {`
+                    button {
+                        cursor: pointer; /* Change cursor to pointer on hover */
+                    }
+                    button:hover {
+                        opacity: 0.8; /* Optional: Add a hover effect */
+                    }
+                `}
+            </style>
         </html>
     )
 }
