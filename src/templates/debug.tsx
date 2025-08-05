@@ -1,4 +1,5 @@
 import { Layout } from ".";
+import { FishUploadForm } from "./fishUploadForm";
 
 const GeneralButtons = () => (
   <div class="mb-6">
@@ -100,6 +101,7 @@ export const Debug = () => {
         <div class="p-4 space-y-6">
           <GeneralButtons />
           <DeviceButtons />
+          <FishUploadForm />
         </div>
         {/* Right: Result window */}
         <div id="api-result" class="bg-gray-900 text-white p-4 rounded min-h-40">
