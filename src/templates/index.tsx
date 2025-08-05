@@ -22,6 +22,8 @@ export const Lander: FC = () => {
                     <h1 class="text-2xl font-bold">Fish Tracker</h1>
                     <p>Swagger UI available at <a class="text-blue-500 cursor-pointer" href="/api/swagger/ui">UI</a></p>
                     <p>Swagger DOC available at <a class="text-blue-500 cursor-pointer" href="/api/swagger/doc">DOC</a></p>
+                    <hr />
+                    <p>Endpoint tester <a class="text-blue-500 cursor-pointer" href="/api/debug">debug</a></p>
                 </div>
             </div>
         </Layout>
