@@ -13,7 +13,7 @@ import deviceRoute from './routes/device.route'
 import fishRoute from './routes/fish.route'
 import * as Effect from "effect/Effect"
 
-const app = new Hono()
+const app = new Hono().basePath("/api")
 
 // Initialize DB with Effect error handling
 Effect.runPromise(intitateMongoDb).catch((error) => {
@@ -23,6 +23,7 @@ Effect.runPromise(intitateMongoDb).catch((error) => {
 
 // Middleware
 app.use(logger)
+
 
 /**
  *  SWAGGER
