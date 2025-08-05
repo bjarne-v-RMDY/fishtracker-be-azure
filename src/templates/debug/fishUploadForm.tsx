@@ -20,7 +20,7 @@ export const FishUploadForm = () => (
                 type="file"
                 name="file"
                 accept="image/*"
-                class="w-full text-white"
+                class="w-full text-white border border-gray-600 rounded bg-gray-800 p-2 cursor-pointer"
                 required
             />
             <button
