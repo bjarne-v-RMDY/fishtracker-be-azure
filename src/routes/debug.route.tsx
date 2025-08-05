@@ -6,7 +6,7 @@ import { Debug } from '../templates/debug/debug';
 const debug = new Hono()
 
 
-debug.get("/endpoints", (c) => {
+debug.get("/", (c) => {
     return c.html(<Debug />)
 })
 
