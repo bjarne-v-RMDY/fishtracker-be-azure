@@ -11,14 +11,17 @@ import { swaggerUI } from '@hono/swagger-ui'
 import { intitateMongoDb } from './db'
 import deviceRoute from './routes/device.route'
 import fishRoute from './routes/fish.route'
-
+import * as Effect from "effect/Effect"
 
 const app = new Hono()
 
-//Intialize DB
-intitateMongoDb()
+// Initialize DB with Effect error handling
+Effect.runPromise(intitateMongoDb).catch((error) => {
+  console.error(error.message)
+  process.exit(1)
+})
 
-//Middleware
+// Middleware
 app.use(logger)
 
 /**
@@ -42,9 +45,7 @@ app.get('/', (c) => {
 })
 
 
-//Fish route
-
-//Device route
+// Device and Fish routes
 app.route("/device", deviceRoute)
 app.route("/fish", fishRoute)
 
@@ -52,4 +53,4 @@ app.route("/fish", fishRoute)
 export default {
   port: Bun.env.PORT || 3000,
   fetch: app.fetch,
-} 
+}

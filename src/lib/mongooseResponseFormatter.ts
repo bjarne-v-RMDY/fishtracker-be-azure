@@ -1,5 +1,6 @@
 // utils/mongooseResponseFormatter.ts
 import { Error as MongooseError } from 'mongoose';
+import * as Effect from "effect/Effect";
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -65,4 +66,19 @@ export function createErrorResponse(error: any, message?: string): ApiResponse {
     message: message || (errors.length === 1 ? errors[0].message : 'Operation failed'),
     errors
   };
+}
+
+// Effect helpers
+
+export function effectifyPromise<T>(
+  promise: () => Promise<T>,
+  successMsg = "Operation successful",
+  errorMsg = "Operation failed"
+): Effect.Effect<ApiResponse<T>, ApiResponse<any>, never> {
+  return Effect.tryPromise({
+    try: promise,
+    catch: (error) => createErrorResponse(error, errorMsg)
+  }).pipe(
+    Effect.map((data) => createSuccessResponse(data, successMsg))
+  );
 }

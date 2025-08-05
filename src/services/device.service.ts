@@ -1,30 +1,28 @@
-
 import { Device } from "../db/models";
-import { ApiResponse, createErrorResponse, createSuccessResponse } from "../lib/mongooseResponseFormatter";
+import { ApiResponse, effectifyPromise } from "../lib/mongooseResponseFormatter";
+import * as Effect from "effect/Effect";
 
-
-export async function createDevice(deviceIdentifier: string): Promise<ApiResponse> {
-    try {
+export function createDevice(deviceIdentifier: string): Effect.Effect<ApiResponse<any>, ApiResponse<any>, never> {
+  return effectifyPromise(
+    async () => {
       const device = new Device({ deviceIdentifier });
-      const savedDevice = await device.save();
-      return createSuccessResponse(savedDevice, 'Device created successfully');
-    } catch (error) {
-      console.error('Error creating device:', error);
-      return createErrorResponse(error, 'Failed to create device');
-    }
-  }
+      return await device.save();
+    },
+    'Device created successfully',
+    'Failed to create device'
+  );
+}
 
-export async function getDevice(deviceIdentifier: string): Promise<ApiResponse> {
-  try {
-    const device = await Device.findOne({deviceIdentifier: deviceIdentifier})
-
-    if(device === null){
-      return createErrorResponse({}, 'Device has not been registered yet');
-    }
-
-    return createSuccessResponse(device, "Device exists")
-  } catch (error) {
-    console.error('Error fetching device:', error);
-    return createErrorResponse(error, 'Device has not been registered yet');
-  }
+export function getDevice(deviceIdentifier: string): Effect.Effect<ApiResponse<any>, ApiResponse<any>, never> {
+  return effectifyPromise(
+    async () => {
+      const device = await Device.findOne({ deviceIdentifier });
+      if (!device) {
+        throw { message: 'Device has not been registered yet' };
+      }
+      return device;
+    },
+    'Device exists',
+    'Device has not been registered yet'
+  );
 }

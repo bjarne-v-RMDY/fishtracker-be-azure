@@ -2,7 +2,7 @@
 import { ZodError } from 'zod';
 
 export interface FormattedError {
-  succes: boolean;
+  success: boolean;
   message: string;
   errors: Array<{
     field: string;
@@ -13,7 +13,7 @@ export interface FormattedError {
 
 export function formatZodError(error: ZodError): FormattedError {
   const errors = error.issues.map(err => ({
-    field: err.path.join('.') || 'root',
+    field: err.path.length ? err.path.join('.') : 'root',
     message: err.message,
     code: err.code
   }));
@@ -22,10 +22,8 @@ export function formatZodError(error: ZodError): FormattedError {
     ? `Validation error: ${errors[0].message}` 
     : `Validation failed with ${errors.length} errors`;
 
-  const succes = false
-
   return {
-    succes,
+    success: false,
     message,
     errors
   };
