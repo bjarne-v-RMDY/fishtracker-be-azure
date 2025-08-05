@@ -1,15 +1,18 @@
 import { Fish, FishColor, FishImage, Predator, FunFact } from "../db/models";
-import { ApiResponse, effectifyPromise } from "../lib/mongooseResponseFormatter";
+import { ApiResponse, createSuccessResponse, createErrorResponse, effectifyPromise } from "../lib/mongooseResponseFormatter";
 import { CreateFishWithDataInput } from "../types/fish.types";
 import * as Effect from "effect/Effect";
 
 // Create a new fish with all related data using Effect
 function createFishWithData(fishData: CreateFishWithDataInput): Effect.Effect<ApiResponse<any>, ApiResponse<any>, never> {
-  return effectifyPromise(
-    async () => {
+  return Effect.gen(function* () {
+    try {
       // Create the fish first
       const fish = new Fish(fishData.fish);
-      const savedFish = await fish.save();
+      const savedFish = yield* Effect.tryPromise({
+        try: () => fish.save(),
+        catch: (error) => createErrorResponse(error, "Failed to create fish")
+      });
 
       // Create related data if provided
       const promises: Promise<any>[] = [];
@@ -42,13 +45,18 @@ function createFishWithData(fishData: CreateFishWithDataInput): Effect.Effect<Ap
         promises.push(...funFactPromises);
       }
 
-      await Promise.all(promises);
+      if (promises.length > 0) {
+        yield* Effect.tryPromise({
+          try: () => Promise.all(promises),
+          catch: (error) => createErrorResponse(error, "Failed to create related fish data")
+        });
+      }
 
-      return savedFish;
-    },
-    'Fish and related data created successfully',
-    'Failed to create fish and related data'
-  );
+      return createSuccessResponse(savedFish, "Fish and related data created successfully");
+    } catch (error) {
+      return createErrorResponse(error, "Failed to create fish and related data");
+    }
+  });
 }
 
 // Get fish with all related data (no Effect, just Promise)
