@@ -28,6 +28,7 @@ deviceRoute.get(
 deviceRoute.post(
   '/register',
   async (c) => {
+
     let body;
     try {
       body = await c.req.json();

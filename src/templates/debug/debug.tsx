@@ -11,19 +11,6 @@ const DebugScript = () => (
   <script
     dangerouslySetInnerHTML={{
       __html: `
-        function fetchDeviceData() {
-          let deviceId = document.getElementById("device-id-input").value.trim();
-          if (!deviceId) {
-            deviceId = "id"
-          }
-          
-          // Use htmx to make the request
-          htmx.ajax('GET', '/api/device/' + encodeURIComponent(deviceId), {
-            target: '#api-result',
-            swap: 'innerHTML'
-          });
-        }
-
         function handleResponse(event) {
           const target = document.getElementById("api-result");
           const responseText = event.detail.xhr.responseText;
