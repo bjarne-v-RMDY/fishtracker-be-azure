@@ -1,6 +1,7 @@
 import { createErrorResponse, createSuccessResponse } from "./mongooseResponseFormatter";
 import createClient from "@azure-rest/ai-vision-image-analysis";
 import { AzureKeyCredential } from "@azure/core-auth";
+import { fishKeywords } from "../const/fish";
 
 export const handleFishDetection = async (image: ArrayBuffer) => {
     const endpoint = Bun.env.VISION_ENDPOINT;
@@ -37,7 +38,6 @@ export const handleFishDetection = async (image: ArrayBuffer) => {
         }
 
         // List of keywords that are considered "fish-esque"
-        const fishKeywords = ["fish", "shark", "dolphin", "eel", "ray", "trout", "salmon", "bass", "carp", "catfish", "tuna", "cod", "mackerel", "anchovy", "sardine", "herring", "perch", "pike", "tilapia", "snapper", "grouper", "barracuda", "flounder", "halibut", "sole", "sturgeon", "swordfish", "marlin", "manta", "stingray"];
 
         // Filter for detected fish-esque objects
         const fishObjects = (iaResult.objectsResult?.values || []).filter((obj) => {
