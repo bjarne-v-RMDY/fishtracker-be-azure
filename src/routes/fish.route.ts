@@ -69,9 +69,7 @@ fishRoute.post("/upload", async (c) => {
   const fileBuffer = await file.arrayBuffer();
 
   const fishDetectionResult = await handleFishDetection(fileBuffer)
-  if(fishDetectionResult.success){
-    console.log('Succesfully recognized the fish')
-  } else {
+  if(!fishDetectionResult.success) {
     return c.json({
       success: false,
       message: fishDetectionResult.message
@@ -95,6 +93,7 @@ fishRoute.post("/upload", async (c) => {
       mimeType: fileMeta.mimeType,
       size: fileMeta.size,
     },
+    fish: fishDetectionResult.data
   });
 });
 

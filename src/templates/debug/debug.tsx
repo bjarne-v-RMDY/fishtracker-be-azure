@@ -68,7 +68,7 @@ const DebugScript = () => (
 export const Debug = () => {
   return (
     <Layout>
-      <div class="bg-black w-full min-h-svh grid grid-cols-2">
+      <div class="bg-black w-full min-h-svh grid grid-cols-2 max-h-svh overflow-hidden">
         {/* Left: Buttons */}
         <div class="p-4 space-y-6">
           <GeneralButtons />
@@ -76,7 +76,7 @@ export const Debug = () => {
           <FishUploadForm />
         </div>
         {/* Right: Result window */}
-        <div id="api-result" class="bg-gray-900 text-white p-4 rounded min-h-40">
+        <div id="api-result" class="bg-gray-900 text-white p-4 rounded min-h-40 overflow-auto max-h-[99vh]">
           {/* API responses will appear here */}
         </div>
         <DebugScript />
