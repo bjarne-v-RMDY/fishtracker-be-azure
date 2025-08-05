@@ -3,6 +3,7 @@ import { validateDeviceId } from "../validation/device.validation";
 import { getDevice } from "../services/device.service";
 import { getFishByDevice } from "../services/fish.service";
 import { success } from "zod";
+import { handleFishDetection } from "../lib/fishDetection";
 
 const fishRoute = new Hono();
 
@@ -62,8 +63,21 @@ fishRoute.post("/upload", async (c) => {
     return c.json({ error: "No file uploaded or invalid file format." }, 400);
   }
 
+  //Handle fish detection
+
   // Prepare file for blob storage (read buffer and gather metadata)
   const fileBuffer = await file.arrayBuffer();
+
+  const fishDetectionResult = await handleFishDetection(fileBuffer)
+  if(fishDetectionResult.success){
+    console.log('Succesfully recognized the fish')
+  } else {
+    return c.json({
+      success: false,
+      message: fishDetectionResult.message
+    }, 400)
+  }
+
   const fileMeta = {
     originalName: file.name,
     mimeType: file.type,
