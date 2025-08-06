@@ -63,7 +63,6 @@ fishRoute.post("/upload", async (c) => {
     return c.json({ error: "No file uploaded or invalid file format." }, 400);
   }
 
-  //Handle fish detection
 
   // Prepare file for blob storage (read buffer and gather metadata)
   const fileBuffer = await file.arrayBuffer();
@@ -94,7 +93,7 @@ fishRoute.post("/upload", async (c) => {
   // Respond with metadata (do not store yet)
   return c.json({
     success: true,
-    message: "File validated and ready for blob storage.",
+    message: "File validated and put into message queue.",
     deviceId: validatedDeviceId.id,
     fileMeta: {
       originalName: fileMeta.originalName,

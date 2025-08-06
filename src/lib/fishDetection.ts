@@ -2,6 +2,7 @@ import { createErrorResponse, createSuccessResponse } from "./mongooseResponseFo
 import createClient from "@azure-rest/ai-vision-image-analysis";
 import { AzureKeyCredential } from "@azure/core-auth";
 import { fishKeywords } from "../const/fish";
+import { handleImageCutMessageQueue } from "./handleImageCutMessageQueue";
 
 export const handleFishDetection = async (image: ArrayBuffer) => {
     const endpoint = Bun.env.VISION_ENDPOINT;
@@ -58,10 +59,16 @@ export const handleFishDetection = async (image: ArrayBuffer) => {
 
 
         //Process the fish cutting etc in azure with a message queue
+        const messageQueueResponse = await handleImageCutMessageQueue(confidentFish, image)
+
+        if(!messageQueueResponse.success){
+            return messageQueueResponse
+        }
+
 
         return createSuccessResponse({
             fishDetected: confidentFish.length > 0,
-            confidentFish,
+            data: confidentFish,
         });
     } catch (error) {
         return createErrorResponse({
