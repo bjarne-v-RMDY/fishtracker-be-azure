@@ -64,7 +64,6 @@ export const handleFishDetection = async (image: ArrayBuffer) => {
             confidentFish,
         });
     } catch (error) {
-        console.log(error)
         return createErrorResponse({
             message: "Azure Vision API error",
             error: error instanceof Error ? error.message : error
