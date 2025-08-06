@@ -13,10 +13,10 @@ export const Layout: FC = (props) => {
             <style>
                 {`
                     button {
-                        cursor: pointer; /* Change cursor to pointer on hover */
+                        cursor: pointer;
                     }
                     button:hover {
-                        opacity: 0.8; /* Optional: Add a hover effect */
+                        opacity: 0.8; 
                     }
                 `}
             </style>

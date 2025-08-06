@@ -8,6 +8,7 @@ const logger = createMiddleware(async (c, next) => {
   await next()
 })
 
+
 export {
     logger
 }
