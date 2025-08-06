@@ -37,7 +37,6 @@ export const handleFishDetection = async (image: ArrayBuffer) => {
             });
         }
 
-        // List of keywords that are considered "fish-esque"
 
         // Filter for detected fish-esque objects
         const fishObjects = (iaResult.objectsResult?.values || []).filter((obj) => {
@@ -48,9 +47,21 @@ export const handleFishDetection = async (image: ArrayBuffer) => {
             );
         });
 
+        const confidentFish = fishObjects.filter(fish => fish.tags[0].confidence > 0.65)
+
+
+        if(confidentFish.length === 0){
+            return createSuccessResponse({
+                fishDetected: []
+            }, "Successfully processed image but no fish detected")
+        }
+
+
+        //Process the fish cutting etc in azure with a message queue
+
         return createSuccessResponse({
-            fishDetected: fishObjects.length > 0,
-            fishObjects,
+            fishDetected: confidentFish.length > 0,
+            confidentFish,
         });
     } catch (error) {
         console.log(error)

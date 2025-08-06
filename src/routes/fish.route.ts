@@ -76,6 +76,14 @@ fishRoute.post("/upload", async (c) => {
     }, 400)
   }
 
+  if(fishDetectionResult.data.fishDetected.length == 0){
+    return c.json({
+      success: true,
+      message: fishDetectionResult.message,
+      fish: []
+    }, 200)
+  }
+
   const fileMeta = {
     originalName: file.name,
     mimeType: file.type,
