@@ -4,7 +4,7 @@ import { AzureKeyCredential } from "@azure/core-auth";
 import { fishKeywords } from "../const/fish";
 import { handleImageCutMessageQueue } from "./handleImageCutMessageQueue";
 
-export const handleFishDetection = async (image: ArrayBuffer) => {
+export const handleFishDetection = async (image: ArrayBuffer, deviceId: string) => {
     const endpoint = Bun.env.VISION_ENDPOINT;
     const key = Bun.env.VISION_KEY;
 
@@ -59,7 +59,7 @@ export const handleFishDetection = async (image: ArrayBuffer) => {
 
 
         //Process the fish cutting etc in azure with a message queue
-        const messageQueueResponse = await handleImageCutMessageQueue(confidentFish, image)
+        const messageQueueResponse = await handleImageCutMessageQueue(confidentFish, image, deviceId)
 
         if(!messageQueueResponse.success){
             return messageQueueResponse

@@ -2,5 +2,6 @@ import { DetectedObjectOutput } from "@azure-rest/ai-vision-image-analysis"
 
 export type ImageQueueData = {
     fishData: DetectedObjectOutput[],
-    image: ArrayBuffer
+    image: string,
+    deviceId: string
 }

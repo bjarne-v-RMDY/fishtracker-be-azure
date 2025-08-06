@@ -67,7 +67,7 @@ fishRoute.post("/upload", async (c) => {
   // Prepare file for blob storage (read buffer and gather metadata)
   const fileBuffer = await file.arrayBuffer();
 
-  const fishDetectionResult = await handleFishDetection(fileBuffer)
+  const fishDetectionResult = await handleFishDetection(fileBuffer, validatedDeviceId.id as string)
   if(!fishDetectionResult.success) {
     return c.json({
       success: false,
