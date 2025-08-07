@@ -13,6 +13,7 @@
   "dependencies": {
     "@azure/functions": "^4.0.0",
     "@azure/storage-blob": "^12.28.0",
+    "@azure/storage-queue": "^12.27.0",
     "sharp": "^0.34.3"
   },
   "devDependencies": {

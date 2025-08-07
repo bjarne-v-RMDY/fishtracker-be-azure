@@ -1,13 +1,13 @@
 import { DetectedObjectOutput } from "@azure-rest/ai-vision-image-analysis";
 import { app, InvocationContext } from "@azure/functions";
 import { BlobServiceClient } from '@azure/storage-blob';
+import { QueueServiceClient } from "@azure/storage-queue";
 import * as sharp from "sharp";
+import { ImageEnrichementQueueData, ImageQueueData } from "../types";
 
-type ImageQueueData = {
-    fishData: DetectedObjectOutput[],
-    image: string,
-    deviceId: string
-}
+
+
+
 
 export async function afImageCut(queueItem: ImageQueueData, context: InvocationContext): Promise<void> {
     context.log('Starting worker for processing image cutting');
@@ -37,6 +37,8 @@ export async function afImageCut(queueItem: ImageQueueData, context: InvocationC
         const containerClient = blobServiceClient.getContainerClient(containerName);
         const blobClient = containerClient.getBlobClient(blobName);
 
+        const imageEnrichementQueueClient = QueueServiceClient.fromConnectionString(connectionString);
+
         // Download the blob - simpler approach
         context.log('Downloading blob...');
         const downloadBlockBlobResponse = await blobClient.downloadToBuffer();
@@ -52,7 +54,11 @@ export async function afImageCut(queueItem: ImageQueueData, context: InvocationC
         
         // Here you can process the image based on the fish detection data
         // For example, crop fish regions, apply transformations, etc.
-        await processImageWithFishData(downloadBlockBlobResponse, queueItem.fishData, queueItem.deviceId,blobName, context);
+        const res = await processImageWithFishData(downloadBlockBlobResponse, queueItem.fishData, queueItem.deviceId,blobName, context, imageEnrichementQueueClient);
+
+        if(res === null){
+            context.log("Pictures where not enriched")
+        }
 
     } catch (error) {
         context.log(`Error processing image: ${error instanceof Error ? error.message : String(error)}`);
@@ -63,38 +69,25 @@ export async function afImageCut(queueItem: ImageQueueData, context: InvocationC
     context.log('Ended worker');
 }
 
-// Helper function to convert a Node.js readable stream to a Buffer
-async function streamToBuffer(readableStream: NodeJS.ReadableStream | undefined): Promise<Buffer> {
-    if (!readableStream) {
-        throw new Error('Readable stream is undefined');
-    }
-    
-    return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        
-        readableStream.on('data', (chunk: Buffer) => {
-            chunks.push(chunk);
-        });
-        
-        readableStream.on('end', () => {
-            resolve(Buffer.concat(chunks));
-        });
-        
-        readableStream.on('error', (error) => {
-            reject(error);
-        });
-    });
-}
-
 // Example function to process the image with fish data
 async function processImageWithFishData(
     imageBuffer: Buffer, 
     fishData: DetectedObjectOutput[], 
     deviceId: string,
     originalBlobName: string,
-    context: InvocationContext
+    context: InvocationContext,
+    imageEnrichementQueueClient: QueueServiceClient
 ): Promise<void> {
     context.log('Processing image with fish detection data...');
+
+    context.log('Verify if queue connection works')
+    const queueClient = imageEnrichementQueueClient.getQueueClient("image-enrichement");
+    const queueExists = await queueClient.exists()
+
+    if(!queueExists){
+        return null;
+    }
+
     
     // Get the original image dimensions
     const image = sharp(imageBuffer);
@@ -172,6 +165,15 @@ async function processImageWithFishData(
             });
             
             context.log(`Successfully saved cropped fish ${i + 1} to: ${croppedFileName}`);
+
+            //Add new job on queue with fishfilename
+            const messageForEnrichementQueue: ImageEnrichementQueueData = {imageToEnriche: croppedFileName, deviceId: deviceId}
+            const messageForEnrichementQueueResult = await queueClient.sendMessage(Buffer.from(JSON.stringify(messageForEnrichementQueue)).toString("base64"))
+
+            if(messageForEnrichementQueueResult.errorCode){
+                context.log(messageForEnrichementQueueResult.errorCode)
+            }
+
             
         } catch (error) {
             context.log(`Error processing fish ${i + 1}: ${error instanceof Error ? error.message : String(error)}`);
