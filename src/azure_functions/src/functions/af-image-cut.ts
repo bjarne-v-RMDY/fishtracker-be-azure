@@ -2,7 +2,7 @@ import { DetectedObjectOutput } from "@azure-rest/ai-vision-image-analysis";
 import { app, InvocationContext } from "@azure/functions";
 import { BlobServiceClient } from '@azure/storage-blob';
 import { QueueServiceClient } from "@azure/storage-queue";
-import * as sharp from "sharp";
+import sharp from "sharp";
 import { ImageEnrichementQueueData, ImageQueueData } from "../types";
 
 
