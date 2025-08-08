@@ -127,6 +127,42 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}, body: ${responseBody}`);
                 }
+
+                // Parse the response to get the fish data
+                const fishResponse = JSON.parse(responseBody);
+                
+                if (fishResponse.success && fishResponse.data) {
+                    // Send second request to device endpoint
+                    const deviceId = queueItem.deviceId; // Assuming deviceId is in the queue item
+                    const currentTime = new Date().toISOString();
+                    const imageUrl = queueItem.imageToEnriche; // The blob name can serve as image URL
+                    
+                    const devicePayload = {
+                        fishName: fishResponse.data.name,
+                        fish: fishResponse.data,
+                        imageUrl: imageUrl,
+                        timestamp: currentTime,
+                        fishId: fishResponse.data._id
+                    };
+
+                    context.log("Sending fish data to device endpoint");
+                    const deviceResponse = await fetch(`${apiEndpoint}/device/${deviceId}/add`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(devicePayload)
+                    });
+
+                    context.log('Device endpoint response status:', deviceResponse.status);
+                    const deviceResponseBody = await deviceResponse.text();
+                    context.log('Device endpoint response body:', deviceResponseBody);
+
+                    if (!deviceResponse.ok) {
+                        context.log('Warning: Device endpoint request failed:', deviceResponse.status, deviceResponseBody);
+                        // Don't throw error here as the main fish registration was successful
+                    }
+                }
             } catch (error) {
                 context.log('Error sending fish data to API:', error);
                 throw new Error(`Failed to send fish data to API: ${error instanceof Error ? error.message : 'Unknown error'}`);

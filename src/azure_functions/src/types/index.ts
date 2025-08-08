@@ -13,11 +13,11 @@ export type ImageEnrichementQueueData = {
 
 export type FishType = {
     _id?: string;
-    deviceId: string; // references Device._id
+    deviceId?: string; // Made optional since AI-analyzed fish don't need a device
     name: string;
     captureTimestamp: Date;
     family: string;
-    minSize: number;
+    minSize: number; 
     maxSize: number;
     waterType: 'Freshwater' | 'Saltwater' | 'Brackish';
     description: string;
