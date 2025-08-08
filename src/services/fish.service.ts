@@ -1,7 +1,5 @@
-import { BlobServiceClient } from "@azure/storage-blob";
 import { Fish, FishColor, FishImage, Predator, FunFact, Device } from "../db/models";
 import { ApiResponse, createSuccessResponse, createErrorResponse } from "../lib/mongooseResponseFormatter";
-import { CreateFishWithDataInput } from "../types/fish.types";
 
 // Create a new fish with all related data (no Effect)
 async function createFishWithData(fishData: any): Promise<ApiResponse<any>> {
@@ -89,28 +87,6 @@ async function processFishRegistration(fishData: any): Promise<ApiResponse<any>>
   }
 }
 
-// Get fish with all related data (no Effect, just Promise)
-async function getFishWithAllData(fishId: string) {
-  try {
-    const fish = await Fish.findById(fishId).populate('deviceId');
-    const images = await FishImage.find({ fishId });
-    const colors = await FishColor.find({ fishId });
-    const predators = await Predator.find({ fishId });
-    const funFacts = await FunFact.find({ fishId });
-
-    return {
-      fish,
-      images,
-      colors,
-      predators,
-      funFacts
-    };
-  } catch (error) {
-    console.error('Error getting fish with data:', error);
-    throw error;
-  }
-}
-
 // Get all fish for a specific device (updated for new structure)
 async function getFishByDevice(deviceId: string): Promise<ApiResponse<any>> {
   try {
@@ -143,31 +119,10 @@ async function getFishByDevice(deviceId: string): Promise<ApiResponse<any>> {
   }
 }
 
-// Helper function to generate SAS token for blob access
-async function generateSasToken(blobClient: any): Promise<string> {
-  // For now, we'll use a simple approach - in production you might want to use proper SAS token generation
-  // This is a simplified version that works for development
-  const accountName = blobClient.accountName;
-  const accountKey = process.env['AZURE_STORAGE_ACCOUNT_KEY'];
-  
-  if (!accountKey) {
-    throw new Error('Azure Storage account key not configured');
-  }
 
-  // Generate a simple SAS token (this is a basic implementation)
-  // In production, you should use proper SAS token generation with proper permissions and expiration
-  const expiryDate = new Date();
-  expiryDate.setHours(expiryDate.getHours() + 1); // Token expires in 1 hour
-
-  // This is a simplified SAS token - in production use proper Azure SDK methods
-  const sasToken = `sv=2020-08-04&sr=b&sig=${encodeURIComponent(accountKey)}&st=${new Date().toISOString()}&se=${expiryDate.toISOString()}&sp=r`;
-  
-  return sasToken;
-}
 
 export {
   createFishWithData,
-  getFishWithAllData,
   getFishByDevice,
   processFishRegistration
 }
