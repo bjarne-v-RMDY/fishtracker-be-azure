@@ -5,10 +5,11 @@ import { getFishByDevice, processFishRegistration } from "../services/fish.servi
 import { success } from "zod";
 import { handleFishDetection } from "../lib/fishDetection";
 import { CreateFishWithDataInput } from "../types/fish.types";
+import { BlobServiceClient } from "@azure/storage-blob";
 
 const fishRoute = new Hono();
 
-fishRoute.get("/all/:deviceId", async (c) => {
+fishRoute.get("/:deviceId", async (c) => {
   const params = c.req.param();
   const validatedDeviceId = validateDeviceId(params.deviceId);
 
@@ -21,9 +22,64 @@ fishRoute.get("/all/:deviceId", async (c) => {
     return c.json(mongoDeviceResult, 404);
   }
 
-  const mongoFishResult = await getFishByDevice(mongoDeviceResult.data.id);
+  const mongoFishResult = await getFishByDevice(validatedDeviceId.id as string);
   return c.json(mongoFishResult, mongoFishResult.success ? 200 : 404);
 });
+
+// Image proxy endpoint
+fishRoute.get("/image/*", async (c) => {
+  const imagePath = c.req.path.replace('/api/fish/image/', '');
+  
+  if (!imagePath) {
+    return c.json({ error: "Image path is required" }, 400);
+  }
+
+  try {
+    const connectionString = Bun.env.SA_CONNECTION_STRING;
+    if (!connectionString) {
+      return c.json({ error: "Storage connection not configured" }, 500);
+    }
+
+    const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
+    const containerClient = blobServiceClient.getContainerClient('fish-images');
+    const blobClient = containerClient.getBlobClient(decodeURIComponent(imagePath));
+
+    // Check if blob exists
+    const exists = await blobClient.exists();
+    if (!exists) {
+      return c.json({ error: "Image not found" }, 404);
+    }
+
+    // Download the blob
+    const downloadResponse = await blobClient.download();
+    const imageBuffer = await streamToBuffer(downloadResponse.readableStreamBody);
+
+    // Get content type
+    const properties = await blobClient.getProperties();
+    const contentType = properties.contentType || 'image/jpeg';
+
+    // Return the image with proper headers
+    return new Response(imageBuffer, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
+      },
+    });
+  } catch (error) {
+    console.error('Error serving image:', error);
+    return c.json({ error: "Failed to serve image" }, 500);
+  }
+});
+
+// Helper function to convert stream to buffer
+async function streamToBuffer(readableStream: any): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    readableStream.on('data', (chunk: Buffer) => chunks.push(chunk));
+    readableStream.on('end', () => resolve(Buffer.concat(chunks)));
+    readableStream.on('error', reject);
+  });
+}
 
 fishRoute.post("/process-fish-registration", async (c) => {
   let body;
