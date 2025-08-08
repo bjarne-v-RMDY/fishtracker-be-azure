@@ -24,6 +24,22 @@ const DebugFishScript = () => (
             });
         }
         
+        function openFullscreenImage(imageUrl, fishName) {
+          const modal = document.getElementById('fullscreen-modal');
+          const modalImage = document.getElementById('fullscreen-image');
+          
+          modalImage.src = imageUrl;
+          modalImage.alt = fishName;
+          modal.classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+        }
+        
+        function closeFullscreenImage() {
+          const modal = document.getElementById('fullscreen-modal');
+          modal.classList.add('hidden');
+          document.body.style.overflow = 'auto';
+        }
+        
         function displayFishResults(data) {
           const resultsDiv = document.getElementById("fish-results");
           
@@ -70,7 +86,8 @@ const DebugFishScript = () => (
                       <img 
                         src="\${fish.imageUrl}" 
                         alt="\${fishData.name}" 
-                        class="w-full h-48 object-cover rounded-lg border border-gray-600"
+                        class="w-full h-48 object-cover rounded-lg border border-gray-600 cursor-pointer hover:opacity-80 transition-opacity"
+                        onclick="openFullscreenImage('\${fish.imageUrl}', '\${fishData.name}')"
                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
                       />
                       <div class="hidden w-full h-48 bg-gray-700 rounded-lg border border-gray-600 flex items-center justify-center">
@@ -147,6 +164,26 @@ export const DebugFish = () => {
             </div>
           </div>
         </div>
+
+        {/* Fullscreen Image Modal */}
+        <div
+          id="fullscreen-modal"
+          class="hidden fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+          onclick="closeFullscreenImage()"
+        >
+          <button
+            onclick="closeFullscreenImage()"
+            class="absolute top-8 right-8 text-white text-3xl font-bold bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-75 transition-colors z-10"
+          >
+            ×
+          </button>
+          <img
+            id="fullscreen-image"
+            class="max-w-full max-h-full object-contain"
+            onclick="event.stopPropagation()"
+          />
+        </div>
+
         <DebugFishScript />
       </div>
     </Layout>
