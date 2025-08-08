@@ -1,4 +1,5 @@
-import { Fish, FishColor, FishImage, Predator, FunFact } from "../db/models";
+import { BlobServiceClient } from "@azure/storage-blob";
+import { Fish, FishColor, FishImage, Predator, FunFact, Device } from "../db/models";
 import { ApiResponse, createSuccessResponse, createErrorResponse } from "../lib/mongooseResponseFormatter";
 import { CreateFishWithDataInput } from "../types/fish.types";
 
@@ -110,17 +111,58 @@ async function getFishWithAllData(fishId: string) {
   }
 }
 
-// Get all fish for a specific device (no Effect)
+// Get all fish for a specific device (updated for new structure)
 async function getFishByDevice(deviceId: string): Promise<ApiResponse<any>> {
   try {
-    const fish = await Fish.find({ deviceId }).populate('deviceId');
-    if (!fish || fish.length === 0) {
-      return createErrorResponse({ message: 'No fish found related to this device' }, 'No fish found related to this device');
+    // Find the device and populate the fish array with full fish details
+    const device = await Device.findOne({ deviceIdentifier: deviceId }).populate({
+      path: 'fish.fish',
+      model: 'Fish'
+    });
+    
+    if (!device) {
+      return createErrorResponse({ message: 'Device not found' }, 'Device not found');
     }
-    return createSuccessResponse(fish, 'Fish found');
+    
+    if (!device.fish || device.fish.length === 0) {
+      return createErrorResponse({ message: 'No fish found for this device' }, 'No fish found for this device');
+    }
+
+    // Add image URLs to each fish entry
+    const fishWithImages = device.fish.map((fishEntry: any) => {
+      const fishData = fishEntry.toObject();
+      return {
+        ...fishData,
+        imageUrl: `/api/fish/image/${encodeURIComponent(fishData.imageUrl)}`
+      };
+    });
+    
+    return createSuccessResponse(fishWithImages, 'Fish found for device');
   } catch (error) {
     return createErrorResponse(error, 'Something went wrong during the fetching of the fish related to the device: ' + deviceId);
   }
+}
+
+// Helper function to generate SAS token for blob access
+async function generateSasToken(blobClient: any): Promise<string> {
+  // For now, we'll use a simple approach - in production you might want to use proper SAS token generation
+  // This is a simplified version that works for development
+  const accountName = blobClient.accountName;
+  const accountKey = process.env['AZURE_STORAGE_ACCOUNT_KEY'];
+  
+  if (!accountKey) {
+    throw new Error('Azure Storage account key not configured');
+  }
+
+  // Generate a simple SAS token (this is a basic implementation)
+  // In production, you should use proper SAS token generation with proper permissions and expiration
+  const expiryDate = new Date();
+  expiryDate.setHours(expiryDate.getHours() + 1); // Token expires in 1 hour
+
+  // This is a simplified SAS token - in production use proper Azure SDK methods
+  const sasToken = `sv=2020-08-04&sr=b&sig=${encodeURIComponent(accountKey)}&st=${new Date().toISOString()}&se=${expiryDate.toISOString()}&sp=r`;
+  
+  return sasToken;
 }
 
 export {

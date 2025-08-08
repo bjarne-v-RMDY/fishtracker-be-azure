@@ -3,7 +3,7 @@ import { CreateFishWithDataInput, ImageEnrichementQueueData } from "../types";
 import { AzureOpenAI } from 'openai';
 import { imageEnrichementSystemPrompt } from "../prompts/image-enrichement-system-prompt";
 import { BlobServiceClient } from "@azure/storage-blob";
-import sharp from "sharp";
+import * as sharp from "sharp";
 
 export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, context: InvocationContext): Promise<void> {
     context.log('Starting worker for processing image enrichement');

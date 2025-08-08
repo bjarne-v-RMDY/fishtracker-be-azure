@@ -12,7 +12,7 @@ import { intitateMongoDb } from './db'
 import deviceRoute from './routes/device.route'
 import fishRoute from './routes/fish.route'
 import { Debug } from './templates/debug/debug'
-import { debug } from './routes/debug.route'
+import debugRoute from './routes/debug.route'
 
 const app = new Hono().basePath("/api")
 
@@ -55,7 +55,7 @@ app.get('/debug', (c) => {
 // Device and Fish routes
 app.route("/device", deviceRoute)
 app.route("/fish", fishRoute)
-app.route("/debug", debug)
+app.route("/debug", debugRoute)
 
 
 export default {

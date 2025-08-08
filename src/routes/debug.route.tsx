@@ -1,15 +1,15 @@
 import { Hono } from "hono";
+import { Debug } from "../templates/debug/debug";
+import { DebugFish } from "../templates/debug/debugFish";
 
-import { Debug } from '../templates/debug/debug';
+const debugRoute = new Hono();
 
+debugRoute.get("/", async (c) => {
+    return c.html(<Debug />);
+});
 
-const debug = new Hono()
+debugRoute.get("/fish", async (c) => {
+    return c.html(<DebugFish />);
+});
 
-
-debug.get("/", (c) => {
-    return c.html(<Debug />)
-})
-
-
-
-export { debug }
+export default debugRoute;

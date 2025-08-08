@@ -1,6 +1,7 @@
 import { Layout } from "..";
 import { DeviceButtons } from "./device";
 import { FishUploadForm } from "./fishUploadForm";
+import { FishByDeviceForm } from "./fishByDevice";
 import { GeneralButtons } from "./general";
 
 
@@ -61,6 +62,7 @@ export const Debug = () => {
           <GeneralButtons />
           <DeviceButtons />
           <FishUploadForm />
+          <FishByDeviceForm />
         </div>
         {/* Right: Result window */}
         <div id="api-result" class="bg-gray-900 text-white p-4 rounded min-h-40 overflow-auto max-h-[99vh]">
