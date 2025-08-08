@@ -1,5 +1,5 @@
 import { app, InvocationContext } from "@azure/functions";
-import { ImageEnrichementQueueData } from "../types";
+import { CreateFishWithDataInput, ImageEnrichementQueueData } from "../types";
 import { AzureOpenAI } from 'openai';
 import { imageEnrichementSystemPrompt } from "../prompts/image-enrichement-system-prompt";
 import { BlobServiceClient } from "@azure/storage-blob";
@@ -100,13 +100,39 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
             
             // Trim any extra whitespace
             cleanedResponse = cleanedResponse.trim();
-            
-            context.log('Cleaned response:', cleanedResponse);
-            
+                        
             const fishData = JSON.parse(cleanedResponse);
-            context.log('Parsed fish data:', JSON.stringify(fishData, null, 2));
             
-            //TODO SEND FISH DATA BACK TO API AND DO REST OF MANAGEMENT THERE
+            //TODO SEND FISH DATA BACK TO API and check if exists or not else create
+
+            const __local__ = process.env["WEBSITE_INSTANCE_ID"]
+            let apiEndpoint = __local__ ? "https://wafishtrackerapi-dxekchh4dvdjg0g4.francecentral-01.azurewebsites.net/api" : "http://localhost:3001/api"
+
+            const fishObject: CreateFishWithDataInput = fishData;
+            try {
+                context.log("Sending fish data to API");
+                const response = await fetch(`${apiEndpoint}/fish/process-fish-registration`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json", // Ensure the content type is set
+                    },
+                    body: JSON.stringify(fishObject)
+                });
+
+                // Log the response status and body for debugging
+                context.log('Response status:', response.status);
+                const responseBody = await response.text(); // Read the response body
+                context.log('Response body:', responseBody);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}, body: ${responseBody}`);
+                }
+            } catch (error) {
+                context.log('Error sending fish data to API:', error);
+                throw new Error(`Failed to send fish data to API: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            } 
+
+
             
         } catch (parseError) {
             context.log('Error parsing AI response as JSON:', parseError);
