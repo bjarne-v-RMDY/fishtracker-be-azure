@@ -7,7 +7,26 @@ const deviceSchema = new mongoose.Schema({
     required: true,
     unique: true,
     trim: true
-  }
+  },
+  fish: [{
+    fish: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Fish',
+      required: true
+    },
+    imageUrl: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      required: true
+    },
+    fishId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    }
+  }]
 }, {
   timestamps: true
 });
