@@ -106,8 +106,7 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
             const fishData = JSON.parse(cleanedResponse);
             context.log('Parsed fish data:', JSON.stringify(fishData, null, 2));
             
-            // TODO: Save fishData to your MongoDB database here
-            // You can access fishData.fishData, fishData.colors, fishData.predators, fishData.funFacts
+            //TODO SEND FISH DATA BACK TO API AND DO REST OF MANAGEMENT THERE
             
         } catch (parseError) {
             context.log('Error parsing AI response as JSON:', parseError);

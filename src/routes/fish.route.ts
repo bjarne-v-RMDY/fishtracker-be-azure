@@ -24,6 +24,13 @@ fishRoute.get("/all/:deviceId", async (c) => {
   return c.json(mongoFishResult, mongoFishResult.success ? 200 : 404);
 });
 
+fishRoute.post("/process-fish-registration", async (c) => {
+
+
+
+  return c.json({succes: true})
+})
+
 /**
  * POST /upload
  * Receives a fish picture and a deviceId, validates the deviceId,
