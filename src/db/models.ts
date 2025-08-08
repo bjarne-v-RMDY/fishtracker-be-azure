@@ -80,7 +80,7 @@ const fishSchema = new mongoose.Schema({
   deviceId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Device',
-    required: true
+    required: false // Made optional since AI-analyzed fish don't need a device
   },
   name: {
     type: String,

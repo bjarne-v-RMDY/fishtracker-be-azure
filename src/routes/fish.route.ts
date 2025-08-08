@@ -1,9 +1,10 @@
 import { Hono } from "hono";
 import { validateDeviceId } from "../validation/device.validation";
 import { getDevice } from "../services/device.service";
-import { getFishByDevice } from "../services/fish.service";
+import { getFishByDevice, processFishRegistration } from "../services/fish.service";
 import { success } from "zod";
 import { handleFishDetection } from "../lib/fishDetection";
+import { CreateFishWithDataInput } from "../types/fish.types";
 
 const fishRoute = new Hono();
 
@@ -22,6 +23,43 @@ fishRoute.get("/all/:deviceId", async (c) => {
 
   const mongoFishResult = await getFishByDevice(mongoDeviceResult.data.id);
   return c.json(mongoFishResult, mongoFishResult.success ? 200 : 404);
+});
+
+fishRoute.post("/process-fish-registration", async (c) => {
+  let body;
+
+  try {
+    body = await c.req.json();
+  } catch (error) {
+    return c.json({ success: false, message: "No body found on the request" }, 400);
+  }
+
+  // Validate that the body contains the required fish data
+  console.log(body.fishData.name)  
+  
+  // Handle the data structure from Azure Function
+  let fishData = body.fishData;
+  
+  // Additional validation to ensure we have the fish data
+  if (!fishData) {
+    return c.json({ success: false, message: "Fish data is required" }, 400);
+  }
+
+  try {
+    const result = await processFishRegistration(fishData);
+    
+    if (result.success) {
+      return c.json(result, 200);
+    } else {
+      return c.json(result, 400);
+    }
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      message: "Failed to process fish registration",
+      error: error instanceof Error ? error.message : "Unknown error"
+    }, 500);
+  }
 });
 
 /**
