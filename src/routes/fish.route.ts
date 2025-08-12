@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { validateDeviceId } from "../validation/device.validation";
 import { getDevice } from "../services/device.service";
-import { getFishByDevice, processFishRegistration } from "../services/fish.service";
+import { getFishByDevice, processFishRegistration, checkFishByName, addExistingFishToDevice } from "../services/fish.service";
 import { success } from "zod";
 import { handleFishDetection } from "../lib/fishDetection";
 import { CreateFishWithDataInput } from "../types/fish.types";
@@ -24,6 +24,68 @@ fishRoute.get("/:deviceId", async (c) => {
 
   const mongoFishResult = await getFishByDevice(validatedDeviceId.id as string);
   return c.json(mongoFishResult, mongoFishResult.success ? 200 : 404);
+});
+
+// Check if fish exists by name
+fishRoute.get("/name/:fishName", async (c) => {
+  const params = c.req.param();
+  const fishName = params.fishName;
+
+  if (!fishName) {
+    return c.json({ success: false, message: "Fish name is required" }, 400);
+  }
+
+  try {
+    const result = await checkFishByName(fishName);
+    return c.json(result, result.success ? 200 : 404);
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      message: "Failed to check fish by name",
+      error: error instanceof Error ? error.message : "Unknown error"
+    }, 500);
+  }
+});
+
+// Add existing fish to device
+fishRoute.post("/add-existing/:deviceId/:fishName", async (c) => {
+  const params = c.req.param();
+  const deviceId = params.deviceId;
+  const fishName = params.fishName;
+
+  if (!deviceId || !fishName) {
+    return c.json({ success: false, message: "Device ID and Fish Name are required" }, 400);
+  }
+
+  // Validate device ID
+  const validatedDeviceId = validateDeviceId(deviceId);
+  if (!validatedDeviceId.success) {
+    return c.json(validatedDeviceId.error, 400);
+  }
+
+  // Get image URL from request body
+  let body;
+  try {
+    body = await c.req.json();
+  } catch (error) {
+    return c.json({ success: false, message: "Request body is required" }, 400);
+  }
+
+  const { imageUrl } = body;
+  if (!imageUrl) {
+    return c.json({ success: false, message: "Image URL is required" }, 400);
+  }
+
+  try {
+    const result = await addExistingFishToDevice(deviceId, fishName, imageUrl);
+    return c.json(result, result.success ? 200 : 400);
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      message: "Failed to add existing fish to device",
+      error: error instanceof Error ? error.message : "Unknown error"
+    }, 500);
+  }
 });
 
 // Image proxy endpoint

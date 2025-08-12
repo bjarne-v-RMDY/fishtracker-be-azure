@@ -2,6 +2,7 @@ import { app, InvocationContext } from "@azure/functions";
 import { CreateFishWithDataInput, ImageEnrichementQueueData } from "../types";
 import { AzureOpenAI } from 'openai';
 import { imageEnrichementSystemPrompt } from "../prompts/image-enrichement-system-prompt";
+import { fishNameSystemPrompt } from "../prompts/fish-name-prompt";
 import { BlobServiceClient } from "@azure/storage-blob";
 import * as sharp from "sharp";
 
@@ -55,8 +56,117 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
     
     const client = new AzureOpenAI(options);
     
+    const __local__ = process.env["WEBSITE_INSTANCE_ID"]
+    let apiEndpoint = __local__ ? "https://wafishtrackerapi-dxekchh4dvdjg0g4.francecentral-01.azurewebsites.net/api" : "http://localhost:3001/api"
+
     try {
-        const response = await client.chat.completions.create({
+        // Step 1: Get fish name only
+        context.log('Step 1: Getting fish name from image...');
+        const nameResponse = await client.chat.completions.create({
+            messages: [
+                { 
+                    role: "system", 
+                    content: fishNameSystemPrompt 
+                },
+                { 
+                    role: "user", 
+                    content: [
+                        {
+                            type: "text",
+                            text: "Please identify the fish species in this image."
+                        },
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: imageDataUrl
+                            }
+                        }
+                    ]
+                }
+            ],
+            max_tokens: 100,
+            temperature: 0.1,
+            top_p: 1,
+            model: modelName
+        });
+        
+        const nameAiResponse = nameResponse.choices[0].message.content;
+        let fishName: string;
+        
+        try {
+            // Clean the response by removing markdown code block wrapper
+            let cleanedNameResponse = nameAiResponse;
+            
+            if (cleanedNameResponse.startsWith('```json')) {
+                cleanedNameResponse = cleanedNameResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+            } else if (cleanedNameResponse.startsWith('```')) {
+                cleanedNameResponse = cleanedNameResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
+            }
+            
+            cleanedNameResponse = cleanedNameResponse.trim();
+            const nameData = JSON.parse(cleanedNameResponse);
+            fishName = nameData.fishName;
+            
+            if (!fishName) {
+                throw new Error('No fish name found in AI response');
+            }
+            
+            context.log(`Identified fish name: ${fishName}`);
+        } catch (parseError) {
+            context.log('Error parsing fish name response:', parseError);
+            context.log('Raw name response:', nameAiResponse);
+            throw new Error('Failed to parse fish name from AI response');
+        }
+
+        // Step 2: Check if fish already exists
+        context.log('Step 2: Checking if fish already exists...');
+        const checkResponse = await fetch(`${apiEndpoint}/fish/name/${encodeURIComponent(fishName)}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+
+        if (!checkResponse.ok) {
+            throw new Error(`HTTP error checking fish name! status: ${checkResponse.status}`);
+        }
+
+        const checkResult = await checkResponse.json();
+        context.log('Fish check result:', checkResult);
+
+        if (checkResult.success && checkResult.data.known) {
+            // Fish is known - skip full enrichment and add to device directly
+            context.log(`Fish "${fishName}" is already known, skipping full enrichment`);
+            
+            const existingFish = checkResult.data;
+            const deviceId = queueItem.deviceId;
+            const imageUrl = queueItem.imageToEnriche;
+
+            context.log("Adding existing fish to device...");
+            const addExistingResponse = await fetch(`${apiEndpoint}/fish/add-existing/${deviceId}/${fishName}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ imageUrl: imageUrl })
+            });
+
+            context.log('Add existing fish response status:', addExistingResponse.status);
+            const addExistingResponseBody = await addExistingResponse.text();
+            context.log('Add existing fish response body:', addExistingResponseBody);
+
+            if (!addExistingResponse.ok) {
+                context.log('Warning: Add existing fish request failed:', addExistingResponse.status, addExistingResponseBody);
+                // Don't throw error here as the main fish check was successful
+            }
+            
+            context.log('Successfully added existing fish to device');
+            return;
+        }
+
+        // Step 3: Fish is not known - proceed with full enrichment
+        context.log('Step 3: Fish is not known, proceeding with full enrichment...');
+        const enrichmentResponse = await client.chat.completions.create({
             messages: [
                 { 
                     role: "system", 
@@ -79,63 +189,52 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
                 }
             ],
             max_tokens: 4096,
-            temperature: 0.3, // Lower temperature for more consistent structured output
+            temperature: 0.3,
             top_p: 1,
             model: modelName
         });
         
-        const aiResponse = response.choices[0].message.content;
+        const aiResponse = enrichmentResponse.choices[0].message.content;
         
-
         try {
             // Clean the response by removing markdown code block wrapper
             let cleanedResponse = aiResponse;
             
-            // Remove ```json at the beginning and ``` at the end
             if (cleanedResponse.startsWith('```json')) {
                 cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/\s*```$/, '');
             } else if (cleanedResponse.startsWith('```')) {
                 cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/\s*```$/, '');
             }
             
-            // Trim any extra whitespace
             cleanedResponse = cleanedResponse.trim();
-                        
             const fishData = JSON.parse(cleanedResponse);
             
-            //TODO SEND FISH DATA BACK TO API and check if exists or not else create
-
-            const __local__ = process.env["WEBSITE_INSTANCE_ID"]
-            let apiEndpoint = __local__ ? "https://wafishtrackerapi-dxekchh4dvdjg0g4.francecentral-01.azurewebsites.net/api" : "http://localhost:3001/api"
-
             const fishObject: CreateFishWithDataInput = fishData;
             try {
-                context.log("Sending fish data to API");
+                context.log("Sending new fish data to API for registration");
                 const response = await fetch(`${apiEndpoint}/fish/process-fish-registration`, {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/json", // Ensure the content type is set
+                        "Content-Type": "application/json",
                     },
                     body: JSON.stringify(fishObject)
                 });
 
-                // Log the response status and body for debugging
                 context.log('Response status:', response.status);
-                const responseBody = await response.text(); // Read the response body
+                const responseBody = await response.text();
                 context.log('Response body:', responseBody);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}, body: ${responseBody}`);
                 }
 
-                // Parse the response to get the fish data
                 const fishResponse = JSON.parse(responseBody);
                 
                 if (fishResponse.success && fishResponse.data) {
                     // Send second request to device endpoint
-                    const deviceId = queueItem.deviceId; // Assuming deviceId is in the queue item
+                    const deviceId = queueItem.deviceId;
                     const currentTime = new Date().toISOString();
-                    const imageUrl = queueItem.imageToEnriche; // The blob name can serve as image URL
+                    const imageUrl = queueItem.imageToEnriche;
                     
                     const devicePayload = {
                         fishName: fishResponse.data.name,
@@ -145,7 +244,7 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
                         fishId: fishResponse.data._id
                     };
 
-                    context.log("Sending fish data to device endpoint");
+                    context.log("Sending new fish data to device endpoint");
                     const deviceResponse = await fetch(`${apiEndpoint}/device/${deviceId}/add`, {
                         method: "POST",
                         headers: {
@@ -160,24 +259,19 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
 
                     if (!deviceResponse.ok) {
                         context.log('Warning: Device endpoint request failed:', deviceResponse.status, deviceResponseBody);
-                        // Don't throw error here as the main fish registration was successful
                     }
                 }
             } catch (error) {
                 context.log('Error sending fish data to API:', error);
                 throw new Error(`Failed to send fish data to API: ${error instanceof Error ? error.message : 'Unknown error'}`);
             } 
-
-
-            
         } catch (parseError) {
             context.log('Error parsing AI response as JSON:', parseError);
             context.log('Raw response:', aiResponse);
         }
         
-        
     } catch (apiError) {
-        context.log('Error calling OpenAI API:', apiError);
+        context.log('Error in fish enrichment process:', apiError);
         throw apiError;
     }
     
