@@ -119,10 +119,80 @@ async function getFishByDevice(deviceId: string): Promise<ApiResponse<any>> {
   }
 }
 
+// Check if fish exists by name
+async function checkFishByName(fishName: string): Promise<ApiResponse<any>> {
+  try {
+    // Check if fish already exists by name
+    const existingFish = await Fish.findOne({ name: fishName });
+    
+    if (existingFish) {
+      return createSuccessResponse({
+        ...existingFish.toObject(),
+        known: true
+      }, "Fish found with this name");
+    }
 
+    // If fish doesn't exist, return with known: false
+    return createSuccessResponse({
+      name: fishName,
+      known: false
+    }, "Fish not found with this name");
+  } catch (error) {
+    return createErrorResponse(error, "Failed to check fish by name");
+  }
+}
+
+// Add existing fish to device
+async function addExistingFishToDevice(deviceId: string, fishName: string, imageUrl: string): Promise<ApiResponse<any>> {
+  try {
+    // Check if device exists
+    const device = await Device.findOne({ deviceIdentifier: deviceId });
+    if (!device) {
+      return createErrorResponse({ message: 'Device not found' }, 'Device not found');
+    }
+
+    // Check if fish exists by name
+    const fish = await Fish.findOne({ name: fishName });
+    if (!fish) {
+      return createErrorResponse({ message: 'Fish not found with this name' }, 'Fish not found');
+    }
+
+    // Check if fish is already associated with this device
+    const existingFishEntry = device.fish.find((entry: any) => 
+      entry.fishId.toString() === fish._id.toString()
+    );
+
+    if (existingFishEntry) {
+      return createErrorResponse({ message: 'Fish is already associated with this device' }, 'Fish already exists for this device');
+    }
+
+    // Add fish to device
+    const currentTime = new Date();
+    device.fish.push({
+      fish: fish._id,
+      imageUrl: imageUrl,
+      timestamp: currentTime,
+      fishId: fish._id
+    });
+
+    await device.save();
+
+    return createSuccessResponse({
+      deviceId: device.deviceIdentifier,
+      fishId: fish._id,
+      fishName: fish.name,
+      imageUrl: imageUrl,
+      timestamp: currentTime
+    }, 'Fish successfully added to device');
+  } catch (error) {
+    return createErrorResponse(error, 'Failed to add fish to device');
+  }
+}
 
 export {
   createFishWithData,
   getFishByDevice,
-  processFishRegistration
+  processFishRegistration,
+  checkFishByName,
+  addExistingFishToDevice
 }
