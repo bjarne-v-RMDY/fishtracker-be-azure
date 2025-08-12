@@ -155,12 +155,26 @@ export async function afImageEnrichement(queueItem: ImageEnrichementQueueData, c
             const addExistingResponseBody = await addExistingResponse.text();
             context.log('Add existing fish response body:', addExistingResponseBody);
 
+            // Try to parse JSON to detect skip flag
+            let addExistingJson: any | null = null;
+            try {
+                addExistingJson = JSON.parse(addExistingResponseBody);
+            } catch (_) {
+                // non-JSON response; continue with status-based handling
+            }
+
             if (!addExistingResponse.ok) {
                 context.log('Warning: Add existing fish request failed:', addExistingResponse.status, addExistingResponseBody);
                 // Don't throw error here as the main fish check was successful
+            } else {
+                // Success: check if skipped due to rate limit
+                const skipped = addExistingJson?.data?.skipped === true;
+                if (skipped) {
+                    context.log('Existing fish sighting skipped to avoid spamming (seen within 10 seconds).');
+                } else {
+                    context.log('Successfully added existing fish to device');
+                }
             }
-            
-            context.log('Successfully added existing fish to device');
             return;
         }
 
