@@ -157,21 +157,35 @@ async function addExistingFishToDevice(deviceId: string, fishName: string, image
       return createErrorResponse({ message: 'Fish not found with this name' }, 'Fish not found');
     }
 
-    // Check if fish is already associated with this device
-    const existingFishEntry = device.fish.find((entry: any) => 
-      entry.fishId.toString() === fish._id.toString()
-    );
+    // Rate-limit: Only add if last sighting of same fish type was > 10s ago
+    const TEN_SECONDS_MS = 10 * 1000;
+    const now = new Date();
 
-    if (existingFishEntry) {
-      return createErrorResponse({ message: 'Fish is already associated with this device' }, 'Fish already exists for this device');
+    // Find most recent entry for this fish type on this device
+    const entriesForFish = (device.fish || []).filter((entry: any) => entry.fishId?.toString() === fish._id.toString());
+    const lastEntry = entriesForFish.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+
+    if (lastEntry) {
+      const lastSeenMs = new Date(lastEntry.timestamp).getTime();
+      const diffMs = now.getTime() - lastSeenMs;
+      if (diffMs < TEN_SECONDS_MS) {
+        return createSuccessResponse({
+          deviceId: device.deviceIdentifier,
+          fishId: fish._id,
+          fishName: fish.name,
+          imageUrl,
+          lastSeenAt: new Date(lastSeenMs),
+          skipped: true,
+          reason: 'Seen within the last 10 seconds'
+        }, 'Fish sighting skipped to prevent spamming');
+      }
     }
 
     // Add fish to device
-    const currentTime = new Date();
     device.fish.push({
       fish: fish._id,
       imageUrl: imageUrl,
-      timestamp: currentTime,
+      timestamp: now,
       fishId: fish._id
     });
 
@@ -182,7 +196,8 @@ async function addExistingFishToDevice(deviceId: string, fishName: string, image
       fishId: fish._id,
       fishName: fish.name,
       imageUrl: imageUrl,
-      timestamp: currentTime
+      timestamp: now,
+      skipped: false
     }, 'Fish successfully added to device');
   } catch (error) {
     return createErrorResponse(error, 'Failed to add fish to device');
