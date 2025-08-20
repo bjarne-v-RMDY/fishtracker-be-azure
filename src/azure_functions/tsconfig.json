@@ -5,6 +5,18 @@
     "outDir": "dist",
     "rootDir": ".",
     "sourceMap": true,
-    "strict": false
-  }
+    "strict": false,
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "../../node_modules",
+    "../../node_modules/bun-types/bun.d.ts"
+  ]
 }
