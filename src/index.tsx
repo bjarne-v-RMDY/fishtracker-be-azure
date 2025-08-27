@@ -13,6 +13,7 @@ import deviceRoute from './routes/device.route'
 import fishRoute from './routes/fish.route'
 import { Debug } from './templates/debug/debug'
 import debugRoute from './routes/debug.route'
+import chatRoute from './routes/chat.route'
 
 const app = new Hono().basePath("/api")
 
@@ -56,6 +57,7 @@ app.get('/debug', (c) => {
 app.route("/device", deviceRoute)
 app.route("/fish", fishRoute)
 app.route("/debug", debugRoute)
+app.route("/chat", chatRoute)
 
 
 export default {
