@@ -3,6 +3,7 @@ import { DeviceButtons } from "./device";
 import { FishUploadForm } from "./fishUploadForm";
 import { FishByDeviceForm } from "./fishByDevice";
 import { GeneralButtons } from "./general";
+import { ChatForm } from "./chatForm";
 
 
 
@@ -56,16 +57,17 @@ const DebugScript = () => (
 export const Debug = () => {
   return (
     <Layout>
-      <div class="bg-black w-full min-h-svh grid grid-cols-[0.5fr_1fr] max-h-svh overflow-hidden">
+      <div class="bg-black w-full h-svh grid grid-cols-[0.5fr_1fr]">
         {/* Left: Buttons */}
-        <div class="p-4 space-y-6">
+        <div class="p-4 space-y-6 overflow-y-auto h-full">
           <GeneralButtons />
           <DeviceButtons />
           <FishUploadForm />
           <FishByDeviceForm />
+          <ChatForm />
         </div>
         {/* Right: Result window */}
-        <div id="api-result" class="bg-gray-900 text-white p-4 rounded min-h-40 overflow-auto max-h-[99vh]">
+        <div id="api-result" class="bg-gray-900 text-white p-4 rounded overflow-y-auto h-full">
           {/* API responses will appear here */}
         </div>
         <DebugScript />

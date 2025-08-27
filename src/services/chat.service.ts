@@ -74,7 +74,7 @@ Fish ${index + 1}:
 - Detected at: ${new Date(fish.timestamp).toLocaleString()}
 `).join('\n')}
 
-Please answer questions about these specific fish detections and provide accurate information based on the data provided. You have detailed information about each fish including their physical characteristics, habitat, conservation status, and when they were detected.`;
+Please answer questions about these specific fish detections and provide accurate information based on the data provided. You have detailed information about each fish including their physical characteristics, habitat, conservation status, and when they were detected. Just return a normal string without any special formatting.`;
 
     // Get AI response
     const response = await client.chat.completions.create({
