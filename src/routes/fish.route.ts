@@ -2,9 +2,7 @@ import { Hono } from "hono";
 import { validateDeviceId } from "../validation/device.validation";
 import { getDevice } from "../services/device.service";
 import { getFishByDevice, processFishRegistration, checkFishByName, addExistingFishToDevice } from "../services/fish.service";
-import { success } from "zod";
 import { handleFishDetection } from "../lib/fishDetection";
-import { CreateFishWithDataInput } from "../types/fish.types";
 import { BlobServiceClient } from "@azure/storage-blob";
 
 const fishRoute = new Hono();
@@ -121,7 +119,7 @@ fishRoute.get("/image/*", async (c) => {
     const contentType = properties.contentType || 'image/jpeg';
 
     // Return the image with proper headers
-    return new Response(imageBuffer, {
+    return new Response(new Uint8Array(imageBuffer), {
       headers: {
         'Content-Type': contentType,
         'Cache-Control': 'public, max-age=3600', // Cache for 1 hour

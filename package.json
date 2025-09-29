@@ -2,7 +2,7 @@
   "name": "FishTracker",
   "scripts": {
     "dev": "bun run --hot src/index.tsx",
-    "build": "bun build src/index.tsx --target=bun --outfile=./dist/api-binary"
+    "build": "bun build src/index.tsx --target=bun --compile --outfile=./dist/api-binary"
   },
   "dependencies": {
     "@azure-rest/ai-vision-image-analysis": "^1.0.0-beta.3",
