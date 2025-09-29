@@ -1,18 +1,8 @@
-name: Build and Deploy to Azure Web App
-
-on:
-  push:
-    branches:
-      - main
-
-env:
-  IMAGE_REPO: fishtrackerbackend
-  REGISTRY: crfishtracker.azurecr.io
-  WEBAPP_NAME: waFishTrackerApi
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      imageTag: ${{ steps.build-image.outputs.imageTag }}
 
     steps:
     - name: Checkout code
@@ -27,11 +17,12 @@ jobs:
       run: az acr login --name crfishtracker
 
     - name: Build and push Docker image
+      id: build-image
       run: |
         IMAGE_TAG=${{ github.run_number }}
         docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:$IMAGE_TAG .
         docker push ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:$IMAGE_TAG
-        echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+        echo "imageTag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,4 +38,4 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.WEBAPP_NAME }}
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ needs.build.outputs.imageTag }}
