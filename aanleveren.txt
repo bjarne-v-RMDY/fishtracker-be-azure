@@ -1,0 +1,11 @@
+BE Gewijs aanlevering.
+
+    - DEBUG Scherm.
+        * Duidelijke endpoint routes
+        * Duidelijke services
+        * models
+        
+
+    - Dockerfile for gemakkelijke opstart
+    - package.json
+        * duidelijke commando's om alles te runnen

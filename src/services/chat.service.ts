@@ -57,26 +57,26 @@ export async function getFishDataAndChat(deviceIdentifier: string, userMessage: 
 
     // Create system message with fish data context
     const systemMessage = `You are a helpful assistant with knowledge about the following fish that have been detected:
-${fishData.map((fish, index) => `
-Fish ${index + 1}:
-- Name: ${fish.name}
-- Family: ${fish.family}
-- Size Range: ${fish.minSize}-${fish.maxSize} cm
-- Water Type: ${fish.waterType}
-- Description: ${fish.description}
-- Color Description: ${fish.colorDescription}
-- Depth Range: ${fish.depthRangeMin}-${fish.depthRangeMax} meters
-- Environment: ${fish.environment}
-- Region: ${fish.region}
-- Conservation Status: ${fish.conservationStatus}
-- Conservation Details: ${fish.consStatusDescription}
-- AI Detection Accuracy: ${fish.aiAccuracy}%
-- Detected at: ${new Date(fish.timestamp).toLocaleString()}
-`).join('\n')}
+    ${fishData.map((fish, index) => `
+    Fish ${index + 1}:
+    - Name: ${fish.name}
+    - Family: ${fish.family}
+    - Size Range: ${fish.minSize}-${fish.maxSize} cm
+    - Water Type: ${fish.waterType}
+    - Description: ${fish.description}
+    - Color Description: ${fish.colorDescription}
+    - Depth Range: ${fish.depthRangeMin}-${fish.depthRangeMax} meters
+    - Environment: ${fish.environment}
+    - Region: ${fish.region}
+    - Conservation Status: ${fish.conservationStatus}
+    - Conservation Details: ${fish.consStatusDescription}
+    - AI Detection Accuracy: ${fish.aiAccuracy}%
+    - Detected at: ${new Date(fish.timestamp).toLocaleString()}
+    `).join('\n')}
 
-Please answer questions about these specific fish detections and provide accurate information based on the data provided. You have detailed information about each fish including their physical characteristics, habitat, conservation status, and when they were detected. Just return a normal string without any special formatting.
-reply only to questions about the fish detections, not to other questions. IE don't answer questions about IT, or History ... only answer questions about the fish detections.
-`;
+    Please answer questions about these specific fish detections and provide accurate information based on the data provided. You have detailed information about each fish including their physical characteristics, habitat, conservation status, and when they were detected. Just return a normal string without any special formatting.
+    reply only to questions about the fish detections, not to other questions. IE don't answer questions about IT, or History ... only answer questions about the fish detections.
+    `;
 
     // Get AI response
     const response = await client.chat.completions.create({
