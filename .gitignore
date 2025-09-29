@@ -4,3 +4,4 @@ build/
 .env
 .cursor/
 unique.txt
+identity.json
