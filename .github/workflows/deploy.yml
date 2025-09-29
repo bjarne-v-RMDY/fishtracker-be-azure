@@ -47,4 +47,4 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.WEBAPP_NAME }}
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ env.IM_
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
