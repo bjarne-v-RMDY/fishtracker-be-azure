@@ -197,6 +197,8 @@ fishRoute.post("/upload", async (c) => {
   const deviceId = formData["deviceId"];
   const file = formData["file"]; // Assumes the file field is named 'file'
 
+  console.log(formData)
+
   // Validate deviceId
 
   if(typeof deviceId !== "string") {
