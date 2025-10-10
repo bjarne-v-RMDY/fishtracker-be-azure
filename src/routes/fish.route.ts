@@ -21,7 +21,8 @@ fishRoute.get("/:deviceId", async (c) => {
   }
 
   const mongoFishResult = await getFishByDevice(validatedDeviceId.id as string);
-  return c.json(mongoFishResult, mongoFishResult.success ? 200 : 404);
+  console.log(mongoFishResult)
+  return c.json(mongoFishResult.success ? mongoFishResult : {data: []}, mongoFishResult.success ? 200 : 200);
 });
 
 // Check if fish exists by name
