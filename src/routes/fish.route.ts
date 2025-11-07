@@ -1,11 +1,32 @@
 import { Hono } from "hono";
 import { validateDeviceId } from "../validation/device.validation";
 import { getDevice } from "../services/device.service";
-import { getFishByDevice, processFishRegistration, checkFishByName, addExistingFishToDevice } from "../services/fish.service";
+import { getFishByDevice, processFishRegistration, checkFishByName, addExistingFishToDevice, getFishById } from "../services/fish.service";
 import { handleFishDetection } from "../lib/fishDetection";
 import { BlobServiceClient } from "@azure/storage-blob";
 
 const fishRoute = new Hono();
+
+// Get fish details by ID (must come before /:deviceId to avoid route conflicts)
+fishRoute.get("/detail/:fishId", async (c) => {
+  const params = c.req.param();
+  const fishId = params.fishId;
+
+  if (!fishId) {
+    return c.json({ success: false, message: "Fish ID is required" }, 400);
+  }
+
+  try {
+    const result = await getFishById(fishId);
+    return c.json(result, result.success ? 200 : 404);
+  } catch (error) {
+    return c.json({ 
+      success: false, 
+      message: "Failed to get fish details",
+      error: error instanceof Error ? error.message : "Unknown error"
+    }, 500);
+  }
+});
 
 fishRoute.get("/:deviceId", async (c) => {
   const params = c.req.param();

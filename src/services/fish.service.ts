@@ -204,10 +204,68 @@ async function addExistingFishToDevice(deviceId: string, fishName: string, image
   }
 }
 
+// Get fish by ID with all related data
+async function getFishById(fishId: string): Promise<ApiResponse<any>> {
+  try {
+    // Validate MongoDB ObjectId format
+    if (!fishId || !/^[0-9a-fA-F]{24}$/.test(fishId)) {
+      return createErrorResponse({ message: 'Invalid fish ID format' }, 'Invalid fish ID format');
+    }
+
+    // Find the fish by ID
+    const fish = await Fish.findById(fishId);
+    
+    if (!fish) {
+      return createErrorResponse({ message: 'Fish not found' }, 'Fish not found');
+    }
+
+    // Find devices that have this fish to get the imageUrl
+    const devicesWithFish = await Device.find({ 'fish.fishId': fish._id }).select('fish -_id');
+
+    // Find the most recent imageUrl from device entries
+    let imageUrl: string | undefined;
+    if (devicesWithFish && devicesWithFish.length > 0) {
+      // Collect all fish entries for this fish ID
+      const allFishEntries: any[] = [];
+      devicesWithFish.forEach(device => {
+        if (device.fish && Array.isArray(device.fish)) {
+          device.fish.forEach((entry: any) => {
+            if (entry.fishId && entry.fishId.toString() === fish._id.toString()) {
+              allFishEntries.push(entry);
+            }
+          });
+        }
+      });
+
+      // Sort by timestamp (most recent first) and get the first one
+      if (allFishEntries.length > 0) {
+        const mostRecentEntry = allFishEntries.sort((a: any, b: any) => 
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )[0];
+        
+        if (mostRecentEntry.imageUrl) {
+          imageUrl = `/api/fish/image/${encodeURIComponent(mostRecentEntry.imageUrl)}`;
+        }
+      }
+    }
+
+    // Convert fish to object and add imageUrl
+    const fishData = fish.toObject();
+    
+    return createSuccessResponse({
+      ...fishData,
+      imageUrl: imageUrl || null
+    }, 'Fish details retrieved successfully');
+  } catch (error) {
+    return createErrorResponse(error, 'Failed to get fish by ID');
+  }
+}
+
 export {
   createFishWithData,
   getFishByDevice,
   processFishRegistration,
   checkFishByName,
-  addExistingFishToDevice
+  addExistingFishToDevice,
+  getFishById
 }

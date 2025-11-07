@@ -134,6 +134,33 @@ export const openApiDoc = {
                     }
                 }
             },
+            FishDetail: {
+                type: "object",
+                allOf: [
+                    { $ref: "#/components/schemas/Fish" }
+                ],
+                properties: {
+                    _id: {
+                        type: "string",
+                        description: "Fish ID (MongoDB ObjectId)"
+                    },
+                    imageUrl: {
+                        type: "string",
+                        nullable: true,
+                        description: "URL to the most recent fish image (from device entries), formatted as /api/fish/image/{path}"
+                    },
+                    createdAt: {
+                        type: "string",
+                        format: "date-time",
+                        description: "When the fish record was created"
+                    },
+                    updatedAt: {
+                        type: "string",
+                        format: "date-time",
+                        description: "When the fish record was last updated"
+                    }
+                }
+            },
             ApiResponse: {
                 type: "object",
                 properties: {
@@ -366,6 +393,80 @@ export const openApiDoc = {
                     },
                     "404": {
                         description: "Device not found or no fish data",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    $ref: "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/fish/detail/{fishId}": {
+            get: {
+                tags: ["Fish"],
+                summary: "Get detailed fish information by ID",
+                description: "Retrieves complete fish details including all related data such as images, colors, predators, and fun facts",
+                parameters: [
+                    {
+                        name: "fishId",
+                        in: "path",
+                        required: true,
+                        schema: {
+                            type: "string",
+                            pattern: "^[0-9a-fA-F]{24}$"
+                        },
+                        description: "Fish ID (MongoDB ObjectId)"
+                    }
+                ],
+                responses: {
+                    "200": {
+                        description: "Fish details retrieved successfully",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        success: {
+                                            type: "boolean",
+                                            description: "Whether the operation was successful"
+                                        },
+                                        message: {
+                                            type: "string",
+                                            description: "Response message"
+                                        },
+                                        data: {
+                                            $ref: "#/components/schemas/FishDetail"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        description: "Invalid fish ID format",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    $ref: "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        description: "Fish not found",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    $ref: "#/components/schemas/ApiResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        description: "Server error",
                         content: {
                             "application/json": {
                                 schema: {

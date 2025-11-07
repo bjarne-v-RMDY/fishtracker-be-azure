@@ -2,6 +2,7 @@ import { Layout } from "..";
 import { DeviceButtons } from "./device";
 import { FishUploadForm } from "./fishUploadForm";
 import { FishByDeviceForm } from "./fishByDevice";
+import { FishDetailForm } from "./fishDetail";
 import { GeneralButtons } from "./general";
 import { ChatForm } from "./chatForm";
 
@@ -64,6 +65,7 @@ export const Debug = () => {
           <DeviceButtons />
           <FishUploadForm />
           <FishByDeviceForm />
+          <FishDetailForm />
           <ChatForm />
         </div>
         {/* Right: Result window */}
