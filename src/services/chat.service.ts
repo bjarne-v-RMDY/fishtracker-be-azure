@@ -76,6 +76,8 @@ export async function getFishDataAndChat(deviceIdentifier: string, userMessage: 
 
     Please answer questions about these specific fish detections and provide accurate information based on the data provided. You have detailed information about each fish including their physical characteristics, habitat, conservation status, and when they were detected. Just return a normal string without any special formatting.
     reply only to questions about the fish detections, not to other questions. IE don't answer questions about IT, or History ... only answer questions about the fish detections.
+
+    REMEMBER WHEN QUESTIONS NOT RELATED TO THE FISH DETECTIONS, JUST SAY "I'm sorry, I can only answer questions about the fish detections."
     `;
 
     // Get AI response

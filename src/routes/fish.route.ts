@@ -190,16 +190,20 @@ fishRoute.post("/upload", async (c) => {
   try {
     formData = await c.req.parseBody();
   } catch (error) {
-    return c.json({success: false, message: "No body of type formdata found on the request"}, 400)
+    return c.json({ success: false, message: "Failed to parse form data" }, 400);
   }
 
   // Extract deviceId and file from the form data
-  const deviceId = formData["deviceId"];
-  const file = formData["file"]; // Assumes the file field is named 'file'
+  const deviceId = formData.deviceId;
+  const file = formData.file;
 
-  console.log(formData)
+  if (!deviceId || Array.isArray(deviceId)) {
+    return c.json({ success: false, message: "Invalid deviceId in form data" }, 400);
+  }
 
-  // Validate deviceId
+  if (!file || typeof file === 'string' || !(file instanceof File)) {
+    return c.json({ success: false, message: "Invalid or missing file in form data" }, 400);
+  }
 
   if(typeof deviceId !== "string") {
     return c.json({success: false, message: "deviceId is not a string"}, 400)
